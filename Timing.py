@@ -35,20 +35,20 @@ class Timing(Plugin):
         
         #create frame
         frame = x.frame()
-        frame.SetTitle(" ");
-        frame.SetXTitle("time");
-        frame.SetYTitle("Events");
-        frame.GetXaxis().SetTitleOffset(0.9);
-        frame.GetYaxis().SetTitleOffset(0.8);
-        frame.GetXaxis().SetTitleSize(0.05);
-        frame.GetYaxis().SetTitleSize(0.05);
+        frame.SetTitle(" ")
+        frame.SetXTitle("time")
+        frame.SetYTitle("Events")
+        frame.GetXaxis().SetTitleOffset(0.9)
+        frame.GetYaxis().SetTitleOffset(0.8)
+        frame.GetXaxis().SetTitleSize(0.05)
+        frame.GetYaxis().SetTitleSize(0.05)
                 
         #plot on frame
         one_run_data.plotOn(frame, ROOT.RooFit.LineColor(ROOT.kBlack), ROOT.RooFit.LineWidth(1), ROOT.RooFit.MarkerColor(ROOT.kBlack), ROOT.RooFit.MarkerStyle(20), ROOT.RooFit.MarkerSize(4))
         gauss.plotOn(frame, ROOT.RooFit.LineColor(ROOT.kRed), ROOT.RooFit.Range(xmin, xmax))
         c = ROOT.TCanvas("c", "", 5120, 2880)
-        c.SetLeftMargin(0.09);
-        c.SetBottomMargin(0.12);
+        c.SetLeftMargin(0.09)
+        c.SetBottomMargin(0.12)
         frame.Draw("")
         c.SaveAs(f"/eos/user/d/delvecch/www/PFG/histogram_{run_number}.pdf") 
         print(f"histogram saved in: /eos/user/d/delvecch/www/PFG/histogram_{run_number}.pdf")
