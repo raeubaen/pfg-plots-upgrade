@@ -1,5 +1,4 @@
 import os, sys, urllib.request, urllib.error, urllib.parse, http.client, json
-import array
 import ROOT
 
 from json_handler import dqm_get_json
@@ -25,7 +24,7 @@ class Plugin:
         
     #get the one run data giving the run number
     def get_data_one_run(self, run):
-        return self._data[run_info["run"]]
+        return self._data[run]
 
     
     #list of all the available runs

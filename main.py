@@ -1,11 +1,11 @@
-import os, sys, urllib.request, urllib.error, urllib.parse, http.client, json
-import array
+import os, sys, urllib.request, urllib.error, urllib.parse, http.client
 import ROOT
 import argparse
 import importlib
 import json
 import pandas as pd
 
+from pathlib import Path
 from json_handler import x509_params, dqm_get_json
 from cert_opener import X509CertAuth, X509CertOpen
 
@@ -41,6 +41,10 @@ def main():
     plugins = load_plugins("./conf.json")
     print(plugins)
 
+    #plugins directory path
+    plugins_dir = Path(__file__).parent / "plugins"
+    sys.path.append(str(plugins_dir))
+
     #instantiate the plugins class
     for plugin in plugins:
         print(f"Caricamento del plugin: {plugin}")
@@ -54,6 +58,7 @@ def main():
             instance.process_one_run(item)
             print("\n\n")
 
+        instance.create_history_plots()
             
 if __name__ == "__main__":
     main()
