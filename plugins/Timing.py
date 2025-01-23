@@ -1,23 +1,25 @@
-import os, sys, urllib.request, urllib.error, urllib.parse, http.client, json
+import os, sys, urllib.request, urllib.error, urllib.parse, http.client
 import ROOT
+import json
 
 from Plugin import Plugin
+
 
 
 class Timing(Plugin):
     def __init__(self, buildopener):
         Plugin.__init__(self, buildopener, folder="EcalBarrel/EBSummaryClient/", plot_name="EBTMT timing mean 1D summary")
+
         
     #process single run to extract the mean and fill the _data dict  
     def process_one_run(self, run_info):
+        #take the root object from the json
         one_run_root_object = self.get_root_object(run_info)
         run_number = run_info["run"]
         
-        #using ROOT
+        #fit function and parameters for the first fit
         xmin = one_run_root_object.GetXaxis().GetXmin()
         xmax = one_run_root_object.GetXaxis().GetXmax()
-
-        #fit function and parameters for the first fit
         gauss_ini = ROOT.TF1("gauss_ini", "gaus", -10, 10)
         gauss_ini.SetParameter(1, 0)
         gauss_ini.SetParameter(2, 1)
@@ -41,22 +43,21 @@ class Timing(Plugin):
         one_run_root_object.Draw()
         gauss.SetLineColor(ROOT.kRed)
         gauss.Draw("SAME")
-        c.SaveAs(f"/eos/user/d/delvecch/www/PFG/histogram_{run_number}.pdf")
-        print(f"histogram saved in:\ /eos/user/d/delvecch/www/PFG/histogram_{run_number}.pdf")
+        c.SaveAs(f"/eos/user/d/delvecch/www/PFG/timing_run{run_number}.pdf")
 
+        #fill the _data inside generic Plugin class with the mean
         mean = gauss.GetParameter(1)
         mean_err = gauss.GetParError(1)
         fit_result = {"mean": mean, "mean_error": mean_err}
-        
-        #fill the _data inside generic Plugin class with the mean
         self.fill_data_one_run(run_info, fit_result)
         
     
-    #create the final plot after processing all the runs  
+    #history plot function
     def create_history_plots(self):
-        #creo la canva e imposto la grafica del plot
+        ROOT.gROOT.LoadMacro("rootlogon1.C")
+        #plot graphics
         graph = ROOT.TGraphErrors()
-        available_runs = self.get_available_run()
+        available_runs = self.get_available_runs()
         for i, run in enumerate(available_runs):
             one_run_data = self.get_data_one_run(run)
             mean = one_run_data["mean"]
@@ -66,35 +67,40 @@ class Timing(Plugin):
             print(f"Run {run}: {mean} +/- {mean_error}")
 
         #plot of the graph
-        c = ROOT.TCanvas("c", "", 800, 600)
-        c.SetBottomMargin(0.14)
+        c = ROOT.TCanvas("c", "", 5120, 2880)
         c.SetGrid()
-        graph.SetMarkerStyle(20)  
+        c.SetLeftMargin(0.1)
+        c.SetBottomMargin(0.25)
+        graph.SetMarkerStyle(20)
+        graph.SetMarkerSize(4)
         graph.SetMarkerColor(ROOT.kBlue)  
         graph.SetLineColor(ROOT.kBlue)  
-        graph.SetLineWidth(2)  
-        graph.Draw("AP")  
+        graph.SetLineWidth(2)
+        graph.Draw("ALP")  
 
         #modify the x_axis
         x_axis = graph.GetXaxis()
-        #x_axis.SetTitle("# run")
-        #x_axis.SetTitleSize(0.04)
-        #x_axis.SetTitleOffset(1.0)
         x_axis.SetLimits(-1, len(available_runs))
-        x_axis.SetLabelSize(0.03)
-        x_axis.SetLabelOffset(0.04) 
+        x_axis.SetLabelOffset(0.06)
         x_axis.SetNdivisions(len(available_runs) + 1, False)
         x_axis.ChangeLabel(1, -1, 0)
         x_axis.ChangeLabel(len(available_runs) + 2, -1, 0)
         for i, run in enumerate(available_runs):
             x_axis.ChangeLabel(i + 2, 90, -1, -1, -1, -1, str(run))
-
+        x_axis_title = ROOT.TLatex()
+        x_axis_title.SetTextSize(0.06)
+        x_axis_title.SetTextFont(42)
+        x_axis_title.DrawLatex(9.6, -3.7, "#bf{run}")
+            
         #modify the y_axis
         y_axis = graph.GetYaxis()
         y_axis.SetTitle("mean [ns]")
-        y_axis.SetTitleSize(0.04)
-        y_axis.SetTitleOffset(0.9)
+        y_axis.SetLimits(-3, 3)
+        graph.SetMinimum(-3)
+        graph.SetMaximum(3)
+        y_axis.SetTitleOffset(0.7)
 
         #saving
+        c.Modified()
         c.Update()
-        c.SaveAs(f"/eos/user/d/delvecch/www/PFG/history_plot_Timing.pdf")
+        c.SaveAs(f"/eos/user/d/delvecch/www/PFG/Timing_mean_EB.pdf")

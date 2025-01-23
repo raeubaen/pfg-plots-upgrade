@@ -1,7 +1,9 @@
-import os, sys, urllib.request, urllib.error, urllib.parse, http.client, json
+import os, sys, urllib.request, urllib.error, urllib.parse, http.client
 import ROOT
+import json
 
 from json_handler import dqm_get_json
+
 
 
 class Plugin:
@@ -11,6 +13,7 @@ class Plugin:
         self.folder = folder  #given in the specific class
         self.plot_name = plot_name  #given in the specific class
 
+        
     #take the json from the DQM and converting into a root object
     def get_root_object(self, run_info):
         json_object = dqm_get_json(self.buildopener, run_info["run"], run_info["dataset"], self.folder, self.plot_name)
@@ -28,5 +31,5 @@ class Plugin:
 
     
     #list of all the available runs
-    def get_available_run(self):
+    def get_available_runs(self):
         return self._data.keys()

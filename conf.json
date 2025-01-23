@@ -1,1 +1,1 @@
-{"Plugins": ["Timing"]}
+{"Plugins": ["Timing", "FEStatusBits"]}

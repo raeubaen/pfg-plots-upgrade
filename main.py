@@ -10,6 +10,7 @@ from json_handler import x509_params, dqm_get_json
 from cert_opener import X509CertAuth, X509CertOpen
 
 
+
 #from a csv file to a dict
 def read_csv(file_path):
     df = pd.read_csv(file_path)
@@ -39,26 +40,27 @@ def main():
 
     #read the plugins
     plugins = load_plugins("./conf.json")
-    print(plugins)
-
+    print(f"List of plugins: {plugins}")
+    
     #plugins directory path
     plugins_dir = Path(__file__).parent / "plugins"
     sys.path.append(str(plugins_dir))
 
-    #instantiate the plugins class
+    #loop over plugins
     for plugin in plugins:
         print(f"Caricamento del plugin: {plugin}")
         mod = importlib.import_module(f"{plugin}")
         instance = getattr(mod, f"{plugin}")(buildopener)
-        #print(instance)
+        #loop over runs
         for item in runlist:
             run = item["run"]
             dataset = item["dataset"]
             print(f"Run number: {run}")
+            #instantiate the plugins class
             instance.process_one_run(item)
-            print("\n\n")
-
+        #create the history plot
         instance.create_history_plots()
-            
+        print("\n")
+        
 if __name__ == "__main__":
     main()
