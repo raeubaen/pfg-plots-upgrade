@@ -3,13 +3,13 @@ import ROOT
 import json
 import pandas as pd
 import numpy as np
+from array import array
 
 from Plugin import Plugin
 
 
 
 def df_to_hist(row, hist, tower_list, run_list):
-    #hist.SetBinContent(run_list.index(row.run)+1, tower_list.index(row.tower)+1, row.value)
     hist.Fill(run_list.index(row.run)+1, tower_list.index(row.tower)+1, row.value)
 
     
@@ -74,7 +74,7 @@ class FEStatusBits(Plugin):
         
     #history plot function
     def create_history_plots(self):
-        ROOT.gROOT.LoadMacro("rootlogon1.C")
+        #ROOT.gROOT.LoadMacro("rootlogon1.C")
         available_runs = self.get_available_runs()
         run_dict = {"tower": [], "status": [], "value": [], "run": []}
         for i, run in enumerate(available_runs):
@@ -85,38 +85,78 @@ class FEStatusBits(Plugin):
 
         #from dict to dataframe
         run_df = pd.DataFrame(run_dict)
-        #print(f"Dataframe:\n{run_df}")
 
         #history plot filling
         statuses = {"ENABLED": 1, "DISABLED": 2, "TIMEOUT": 3, "HEADERERROR": 4, "CHANNELID": 5, "LINKERROR": 6, "BLOCKSIZE": 7, "SUPPRESSED": 8,"FORCEDFULLSUPP": 9, "L1ADESYNC": 10, "BXDESYNC": 11, "L1ABXDESYNC": 12, "FIFOFULL": 13, "HPARITY": 14, "VPARITY": 15, "FORCEDZS": 16}
         for i, stat in enumerate(statuses):
             curr_df = run_df[run_df.status == statuses[stat]]
-            #print(curr_df)
             tower_list = list(pd.unique(curr_df.tower))
             run_list = list(pd.unique(curr_df.run))
             if not run_list:
                 continue
             hist = ROOT.TH2F(f"FEStatusBits_{stat}", "", len(run_list), 0., len(run_list)+1, len(tower_list), 0., len(tower_list)+1)
-            """
-            for ix in range(len(run_list)):
-                for iy in range(len(tower_list)):
-                    hist.Fill(ix, iy, 0.)
-            """
             curr_df.apply(lambda row: df_to_hist(row, hist, tower_list, run_list), axis=1)
-            #axis graphic changes
+            for ix in range (len(run_list)):
+                for iy in range(len(tower_list)):
+                    if hist.GetBinContent(ix+1, iy+1) == 0:
+                        hist.SetBinContent(ix+1, iy+1, 10e-09)
+            
+            #axis labels
             for ix, run in enumerate(run_list, start=1):
                 hist.GetXaxis().SetBinLabel(ix, str(run))
             for iy, tower in enumerate(tower_list, start=1):
                 hist.GetYaxis().SetBinLabel(iy, str(tower))
-            c = ROOT.TCanvas("c", "", 5120, 2880)
-            #c.SetLeftMargin(0.8)
-            #c.SetRightMargin(0.9)
-            c.SetBottomMargin(0.14)
-            ROOT.gStyle.SetPalette(ROOT.kTemperatureMap)
-            #ROOT.gStyle.SetNumberContours(50)
+            #canvas options
+            c = ROOT.TCanvas("c", "", 5120, 10000)
+            c.SetGrid()
+            ROOT.gStyle.SetLineColor(ROOT.kGray+1)
+            ROOT.gStyle.SetLineStyle(3)
+            c.SetLeftMargin(0.22)
+            c.SetRightMargin(0.15)
+            c.SetTopMargin(0.02)
+            c.SetBottomMargin(0.1)
+            c.Modified()
+            c.Update()
+            #personalized colour scale
+            n_colors = 5  
+            stops = array("d", [0.0, 0.1, 0.5, 0.8, 1.0])  
+            red = array("d", [0.0, 1.0, 1.0, 1.0, 0.5])
+            green = array("d", [1.0, 1.0, 0.5, 0.0, 0.0])
+            blue = array("d", [1.0, 0.0, 0.0, 0.0, 0.0])
+            n_contours = 255
+            palette = ROOT.TColor.CreateGradientColorTable(n_colors, stops, red, green, blue, n_contours)
+            ROOT.gStyle.SetNumberContours(n_contours)
+            ROOT.gStyle.SetPalette(palette)
+            ROOT.gStyle.SetLabelSize(0.04)
+            #hist options
             hist.SetStats(False)
+            hist.GetXaxis().LabelsOption("v")
+            hist.GetXaxis().SetLabelSize(0.04)
+            hist.GetYaxis().SetLabelSize(0.04)
+            hist.GetZaxis().SetLabelSize(0.04)
+            hist.GetXaxis().SetTickLength(0.02)
+            hist.GetYaxis().SetTickLength(0.02)
+            hist.GetZaxis().SetTickLength(0.02)
             hist.SetMinimum(0.)
             hist.SetMaximum(1.)
             hist.Draw("COLZ")
+            c.Modified()
             c.Update()
+            
+            """
+            #axis titles
+            x_axis_title = ROOT.TLatex()
+            x_axis_title.SetTextSize(0.06)
+            x_axis_title.SetTextFont(42)
+            x_axis_title.DrawLatex(len(run_list)+0.7, -len(tower_list)/10+0.2, "#bf{run}")
+            y_axis_title = ROOT.TLatex()
+            y_axis_title.SetTextSize(0.06)
+            y_axis_title.SetTextFont(42)
+            y_axis_title.SetTextAngle(90)
+            y_axis_title.DrawLatex(-len(run_list)/4, len(tower_list)/10, "#bf{supermodule TT}")
+            c.Modified()
+            c.Update()
+            """
+
             c.SaveAs(f"/eos/user/d/delvecch/www/PFG/FEStatusBits_{stat}.pdf")
+            c.SaveAs(f"/eos/user/d/delvecch/www/PFG/FEStatusBits_{stat}.png")
