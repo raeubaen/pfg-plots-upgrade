@@ -35,8 +35,7 @@ class FEStatusBits(Plugin):
             run_number = run_info["run"]
             nbinsx = one_run_root_object.GetNbinsX()
             nbinsy = one_run_root_object.GetNbinsY()
-            nevents = one_run_root_object.GetEntries()
-            #print(nevents)
+            yproj = one_run_root_object.ProjectionY("yproj", 1, 1)
             #loop on the TH2F histogram: iy -> labels, ix -> trigger tower
             for iy in range(1, nbinsy+1):
                 if labels[iy-1] == "ENABLED" or labels[iy-1] == "SUPPRESSED":
@@ -45,7 +44,7 @@ class FEStatusBits(Plugin):
                     if one_run_root_object.GetBinContent(ix, iy) != 0:
                         run_dict["tower"].append(f"{EBsupermodule} TT{ix}")
                         run_dict["status"].append(iy)
-                        run_dict["value"].append(one_run_root_object.GetBinContent(ix, iy)/nevents)
+                        run_dict["value"].append(one_run_root_object.GetBinContent(ix, iy)/yproj.GetEntries())
                         
         #endcap supermodules
         EEsupermodules_list = ["EE-09", "EE-08", "EE-07", "EE-06", "EE-05", "EE-04", "EE-03", "EE-02", "EE-01", "EE+01", "EE+02", "EE+03", "EE+04", "EE+05", "EE+06", "EE+07", "EE+08", "EE+09"]
@@ -57,7 +56,7 @@ class FEStatusBits(Plugin):
             run_number = run_info["run"]
             nbinsx = one_run_root_object.GetNbinsX()
             nbinsy = one_run_root_object.GetNbinsY()
-            nevents = one_run_root_object.GetEntries()
+            yproj = one_run_root_object.ProjectionY("yproj", 1, 1)
             #loop on the TH2F histogram: iy -> labels, ix -> trigger tower
             for iy in range(1, nbinsy+1):
                 if labels[iy-1] == "ENABLED" or labels[iy-1] == "SUPPRESSED":
@@ -66,7 +65,7 @@ class FEStatusBits(Plugin):
                     if one_run_root_object.GetBinContent(ix, iy) != 0:
                         run_dict["tower"].append(f"{EEsupermodule} TT{ix}")
                         run_dict["status"].append(iy)
-                        run_dict["value"].append(one_run_root_object.GetBinContent(ix, iy)/nevents)
+                        run_dict["value"].append(one_run_root_object.GetBinContent(ix, iy)/yproj.GetEntries())
             
         #fill _data inside generic Plugin class
         self.fill_data_one_run(run_info, run_dict)
@@ -96,67 +95,124 @@ class FEStatusBits(Plugin):
                 continue
             hist = ROOT.TH2F(f"FEStatusBits_{stat}", "", len(run_list), 0., len(run_list)+1, len(tower_list), 0., len(tower_list)+1)
             curr_df.apply(lambda row: df_to_hist(row, hist, tower_list, run_list), axis=1)
-            for ix in range (len(run_list)):
-                for iy in range(len(tower_list)):
-                    if hist.GetBinContent(ix+1, iy+1) == 0:
-                        hist.SetBinContent(ix+1, iy+1, 10e-09)
-            
-            #axis labels
-            for ix, run in enumerate(run_list, start=1):
-                hist.GetXaxis().SetBinLabel(ix, str(run))
-            for iy, tower in enumerate(tower_list, start=1):
-                hist.GetYaxis().SetBinLabel(iy, str(tower))
-            #canvas options
-            c = ROOT.TCanvas("c", "", 5120, 10000)
-            c.SetGrid()
-            ROOT.gStyle.SetLineColor(ROOT.kGray+1)
-            ROOT.gStyle.SetLineStyle(3)
-            c.SetLeftMargin(0.22)
-            c.SetRightMargin(0.15)
-            c.SetTopMargin(0.02)
-            c.SetBottomMargin(0.1)
-            c.Modified()
-            c.Update()
-            #personalized colour scale
-            n_colors = 5  
-            stops = array("d", [0.0, 0.1, 0.5, 0.8, 1.0])  
-            red = array("d", [0.0, 1.0, 1.0, 1.0, 0.5])
-            green = array("d", [1.0, 1.0, 0.5, 0.0, 0.0])
-            blue = array("d", [1.0, 0.0, 0.0, 0.0, 0.0])
-            n_contours = 255
-            palette = ROOT.TColor.CreateGradientColorTable(n_colors, stops, red, green, blue, n_contours)
-            ROOT.gStyle.SetNumberContours(n_contours)
-            ROOT.gStyle.SetPalette(palette)
-            ROOT.gStyle.SetLabelSize(0.04)
-            #hist options
-            hist.SetStats(False)
-            hist.GetXaxis().LabelsOption("v")
-            hist.GetXaxis().SetLabelSize(0.04)
-            hist.GetYaxis().SetLabelSize(0.04)
-            hist.GetZaxis().SetLabelSize(0.04)
-            hist.GetXaxis().SetTickLength(0.02)
-            hist.GetYaxis().SetTickLength(0.02)
-            hist.GetZaxis().SetTickLength(0.02)
-            hist.SetMinimum(0.)
-            hist.SetMaximum(1.)
-            hist.Draw("COLZ")
-            c.Modified()
-            c.Update()
-            
-            """
-            #axis titles
-            x_axis_title = ROOT.TLatex()
-            x_axis_title.SetTextSize(0.06)
-            x_axis_title.SetTextFont(42)
-            x_axis_title.DrawLatex(len(run_list)+0.7, -len(tower_list)/10+0.2, "#bf{run}")
-            y_axis_title = ROOT.TLatex()
-            y_axis_title.SetTextSize(0.06)
-            y_axis_title.SetTextFont(42)
-            y_axis_title.SetTextAngle(90)
-            y_axis_title.DrawLatex(-len(run_list)/4, len(tower_list)/10, "#bf{supermodule TT}")
-            c.Modified()
-            c.Update()
-            """
 
-            c.SaveAs(f"/eos/user/d/delvecch/www/PFG/FEStatusBits_{stat}.pdf")
-            c.SaveAs(f"/eos/user/d/delvecch/www/PFG/FEStatusBits_{stat}.png")
+            #number of subhist
+            nbinsy = hist.GetNbinsY()
+            max_bins = 15
+            n_subhist = nbinsy // max_bins + (1 if nbinsy % max_bins > 0 else 0)
+            if n_subhist == 1:
+                #axis labels
+                for ix, run in enumerate(run_list, start=1):
+                    hist.GetXaxis().SetBinLabel(ix, str(run))
+                for iy, tower in enumerate(tower_list, start=1):
+                    hist.GetYaxis().SetBinLabel(iy, str(tower))
+                
+                #canvas options
+                c = ROOT.TCanvas("c", "", 3600, 2250)
+                c.SetGrid()
+                ROOT.gStyle.SetLineColor(ROOT.kGray+1)
+                ROOT.gStyle.SetLineStyle(3)
+                c.SetLeftMargin(0.15)
+                c.SetRightMargin(0.12)
+                c.SetTopMargin(0.05)
+                c.SetBottomMargin(0.15)
+                c.Modified()
+                c.Update()
+                
+                #personalized colour scale
+                n_colors = 5  
+                stops = array("d", [0.0, 0.1, 0.5, 0.8, 1.0])  
+                red = array("d", [0.0, 1.0, 1.0, 1.0, 0.5])
+                green = array("d", [1.0, 1.0, 0.5, 0.0, 0.0])
+                blue = array("d", [1.0, 0.0, 0.0, 0.0, 0.0])
+                n_contours = 255
+                palette = ROOT.TColor.CreateGradientColorTable(n_colors, stops, red, green, blue, n_contours)
+                color_indices = array("i", range(palette, palette + n_contours))
+                ROOT.gStyle.SetNumberContours(n_contours)
+                ROOT.gStyle.SetPalette(len(color_indices), color_indices)
+                ROOT.gStyle.SetLabelSize(0.06)
+                
+                #hist options
+                hist.SetStats(False)
+                hist.GetXaxis().LabelsOption("v")
+                hist.GetXaxis().SetLabelSize(0.06)
+                hist.GetYaxis().SetLabelSize(0.06)
+                hist.GetZaxis().SetLabelSize(0.06)
+                hist.GetXaxis().SetTickLength(0.03)
+                hist.GetYaxis().SetTickLength(0.02)
+                hist.GetZaxis().SetTickLength(0.02)
+                hist.SetMinimum(0.)
+                hist.SetMaximum(1.)
+                hist.SetMarkerSize(1.5)
+                ROOT.gStyle.SetPaintTextFormat(".1e")
+                hist.Draw("text COLZ")
+                c.Modified()
+                c.Update()
+
+                #save
+                c.SaveAs(f"/eos/user/d/delvecch/www/PFG/FEStatusBits_{stat}.pdf")
+                c.SaveAs(f"/eos/user/d/delvecch/www/PFG/FEStatusBits_{stat}.png")
+                c.SaveAs(f"/eos/user/d/delvecch/www/PFG/FEStatusBits_{stat}.root")
+
+            else:
+                for i in range(n_subhist):
+                    ybin_start = i * max_bins
+                    ybin_end = min((i+1) * max_bins, nbinsy)
+                    subhist = ROOT.TH2F(f"FEStatusBits_{stat}_part{i+1}", "", len(run_list), 0., len(run_list)+1, ybin_end-ybin_start, ybin_start, ybin_end+1)
+                    for ix in range(len(run_list)):
+                        for iy in range(ybin_end-ybin_start):
+                            subhist.SetBinContent(ix+1, iy+1, hist.GetBinContent(ix+1, iy+1))
+
+                    #axis labels
+                    for ix, run in enumerate(run_list, start=1):
+                        subhist.GetXaxis().SetBinLabel(ix, str(run))
+                    for iy in range(ybin_end-ybin_start):
+                        subhist.GetYaxis().SetBinLabel(iy+1, str(tower_list[ybin_start+iy]))
+
+                    #canvas options
+                    c = ROOT.TCanvas("c", "", 3600, 2250)
+                    c.SetGrid()
+                    ROOT.gStyle.SetLineColor(ROOT.kGray+1)
+                    ROOT.gStyle.SetLineStyle(3)
+                    c.SetLeftMargin(0.15)
+                    c.SetRightMargin(0.12)
+                    c.SetTopMargin(0.05)
+                    c.SetBottomMargin(0.15)
+                    c.Modified()
+                    c.Update()
+                    
+                    #personalized colour scale
+                    n_colors = 5
+                    stops = array("d", [0.0, 0.1, 0.5, 0.8, 1.0])
+                    red = array("d", [0.0, 1.0, 1.0, 1.0, 0.5])
+                    green = array("d", [1.0, 1.0, 0.5, 0.0, 0.0])
+                    blue = array("d", [1.0, 0.0, 0.0, 0.0, 0.0])
+                    n_contours = 255
+                    palette = ROOT.TColor.CreateGradientColorTable(n_colors, stops, red, green, blue, n_contours)
+                    color_indices = array("i", range(palette, palette + n_contours))
+                    ROOT.gStyle.SetNumberContours(n_contours)
+                    ROOT.gStyle.SetPalette(len(color_indices), color_indices)
+                    ROOT.gStyle.SetLabelSize(0.06)
+
+
+                    #subhist options
+                    subhist.SetStats(False)
+                    subhist.GetXaxis().LabelsOption("v")
+                    subhist.GetXaxis().SetLabelSize(0.06)
+                    subhist.GetYaxis().SetLabelSize(0.06)
+                    subhist.GetZaxis().SetLabelSize(0.06)
+                    subhist.GetXaxis().SetTickLength(0.03)
+                    subhist.GetYaxis().SetTickLength(0.02)
+                    subhist.GetZaxis().SetTickLength(0.02)
+                    subhist.SetMinimum(0.)
+                    subhist.SetMaximum(1.)
+                    subhist.SetMarkerSize(1.5)
+                    ROOT.gStyle.SetPaintTextFormat(".1e")
+                    subhist.Draw("text COLZ")
+                    c.Modified()
+                    c.Update()
+
+                    #save
+                    c.SaveAs(f"/eos/user/d/delvecch/www/PFG/FEStatusBits_{stat}_part{i+1}.pdf")
+                    c.SaveAs(f"/eos/user/d/delvecch/www/PFG/FEStatusBits_{stat}_part{i+1}.png")
+                    c.SaveAs(f"/eos/user/d/delvecch/www/PFG/FEStatusBits_{stat}_part{i+1}.root")

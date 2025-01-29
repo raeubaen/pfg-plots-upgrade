@@ -104,3 +104,4 @@ class Timing(Plugin):
         c.Modified()
         c.Update()
         c.SaveAs(f"/eos/user/d/delvecch/www/PFG/Timing_mean_EB.pdf")
+        c.SaveAs(f"/eos/user/d/delvecch/www/PFG/Timing_mean_EB.png")
