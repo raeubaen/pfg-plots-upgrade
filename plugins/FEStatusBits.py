@@ -12,7 +12,7 @@ from Plugin import Plugin
 def df_to_hist(row, hist, tower_list, run_list):
     hist.Fill(run_list.index(row.run)+1, tower_list.index(row.tower)+1, row.value)
 
-    
+
 class FEStatusBits(Plugin):
     def __init__(self, buildopener):
         Plugin.__init__(self, buildopener, folder="", plot_name="")
@@ -31,7 +31,7 @@ class FEStatusBits(Plugin):
         for i, EBsupermodule in enumerate(EBsupermodules_list):
             self.folder = "EcalBarrel/EBStatusFlagsTask/FEStatus/"
             self.plot_name = f"EBSFT front-end status bits {EBsupermodule}"
-            one_run_root_object = self.get_root_object(run_info)
+            one_run_root_object = self.get_root_object(run_info, "")
             run_number = run_info["run"]
             nbinsx = one_run_root_object.GetNbinsX()
             nbinsy = one_run_root_object.GetNbinsY()
@@ -52,7 +52,7 @@ class FEStatusBits(Plugin):
         for i, EEsupermodule in enumerate(EEsupermodules_list):
             self.folder = "EcalEndcap/EEStatusFlagsTask/FEStatus/"
             self.plot_name = f"EESFT front-end status bits {EEsupermodule}"
-            one_run_root_object = self.get_root_object(run_info)
+            one_run_root_object = self.get_root_object(run_info, "")
             run_number = run_info["run"]
             nbinsx = one_run_root_object.GetNbinsX()
             nbinsy = one_run_root_object.GetNbinsY()
@@ -84,6 +84,17 @@ class FEStatusBits(Plugin):
 
         #from dict to dataframe
         run_df = pd.DataFrame(run_dict)
+        run_df[["detector", "tower_num", "tt_num"]] = run_df["tower"].str.extract(r'(EB|EE)([+-]?\d+)\s+TT(\d+)')
+        run_df["tower_num"] = run_df["tower_num"].astype(int)
+        run_df["tt_num"] = run_df["tt_num"].astype(int)
+        run_df["detector_priority"] = run_df["detector"].map({"EB": 0, "EE": 1})
+        run_df = run_df.sort_values(by=["detector_priority", "tower_num", "tt_num"]).drop(columns=["detector_priority"])
+
+        #general settings for the canvas
+        ROOT.gStyle.SetNumberContours(255)
+        ROOT.gStyle.SetPalette(ROOT.kBeach)
+        ROOT.TColor.InvertPalette()
+        ROOT.gStyle.SetLabelSize(0.06)
 
         #history plot filling
         statuses = {"ENABLED": 1, "DISABLED": 2, "TIMEOUT": 3, "HEADERERROR": 4, "CHANNELID": 5, "LINKERROR": 6, "BLOCKSIZE": 7, "SUPPRESSED": 8,"FORCEDFULLSUPP": 9, "L1ADESYNC": 10, "BXDESYNC": 11, "L1ABXDESYNC": 12, "FIFOFULL": 13, "HPARITY": 14, "VPARITY": 15, "FORCEDZS": 16}
@@ -118,20 +129,7 @@ class FEStatusBits(Plugin):
                 c.SetBottomMargin(0.15)
                 c.Modified()
                 c.Update()
-                
-                #personalized colour scale
-                n_colors = 5  
-                stops = array("d", [0.0, 0.1, 0.5, 0.8, 1.0])  
-                red = array("d", [0.0, 1.0, 1.0, 1.0, 0.5])
-                green = array("d", [1.0, 1.0, 0.5, 0.0, 0.0])
-                blue = array("d", [1.0, 0.0, 0.0, 0.0, 0.0])
-                n_contours = 255
-                palette = ROOT.TColor.CreateGradientColorTable(n_colors, stops, red, green, blue, n_contours)
-                color_indices = array("i", range(palette, palette + n_contours))
-                ROOT.gStyle.SetNumberContours(n_contours)
-                ROOT.gStyle.SetPalette(len(color_indices), color_indices)
-                ROOT.gStyle.SetLabelSize(0.06)
-                
+
                 #hist options
                 hist.SetStats(False)
                 hist.GetXaxis().LabelsOption("v")
@@ -161,7 +159,7 @@ class FEStatusBits(Plugin):
                     subhist = ROOT.TH2F(f"FEStatusBits_{stat}_part{i+1}", "", len(run_list), 0., len(run_list)+1, ybin_end-ybin_start, ybin_start, ybin_end+1)
                     for ix in range(len(run_list)):
                         for iy in range(ybin_end-ybin_start):
-                            subhist.SetBinContent(ix+1, iy+1, hist.GetBinContent(ix+1, iy+1))
+                            subhist.SetBinContent(ix+1, iy+1, hist.GetBinContent(ix+1, ybin_start+iy+1))
 
                     #axis labels
                     for ix, run in enumerate(run_list, start=1):
@@ -180,20 +178,6 @@ class FEStatusBits(Plugin):
                     c.SetBottomMargin(0.15)
                     c.Modified()
                     c.Update()
-                    
-                    #personalized colour scale
-                    n_colors = 5
-                    stops = array("d", [0.0, 0.1, 0.5, 0.8, 1.0])
-                    red = array("d", [0.0, 1.0, 1.0, 1.0, 0.5])
-                    green = array("d", [1.0, 1.0, 0.5, 0.0, 0.0])
-                    blue = array("d", [1.0, 0.0, 0.0, 0.0, 0.0])
-                    n_contours = 255
-                    palette = ROOT.TColor.CreateGradientColorTable(n_colors, stops, red, green, blue, n_contours)
-                    color_indices = array("i", range(palette, palette + n_contours))
-                    ROOT.gStyle.SetNumberContours(n_contours)
-                    ROOT.gStyle.SetPalette(len(color_indices), color_indices)
-                    ROOT.gStyle.SetLabelSize(0.06)
-
 
                     #subhist options
                     subhist.SetStats(False)

@@ -47,13 +47,26 @@ def x509_params():
     return key_file, cert_file
 
 
-def dqm_get_json(buildopener, run, dataset, folder, plotname):
-    path = f"jsrootfairy/archive/{run}/{dataset}/{folder}/{urllib.parse.quote(plotname)}"
-    path = path.replace("//", "/")
-    url = f"{serverurl}/{path}"
-    #print(url)
+def dqm_get_json(buildopener, run, dataset, folder, plotname, serverurl_online):
+    if (serverurl_online == "online"):
+        dataset = "/Global/Online/ALL/"
+        path = f"jsrootfairy/archive/{run}/{dataset}/{folder}/{urllib.parse.quote(plotname)}"
+        path = path.replace("//", "/")
+        url = f"{serverurl}/{path}"
+
+        datareq = urllib.request.Request(url)
+        datareq.add_header('User-agent', ident)
+
+        return buildopener.open(datareq).read().decode("utf-8")
+
+    else:
+        path = f"jsrootfairy/archive/{run}/{dataset}/{folder}/{urllib.parse.quote(plotname)}"
+        path = path.replace("//", "/")
+        url = f"{serverurl}/{path}"
+        
+        datareq = urllib.request.Request(url)
+        datareq.add_header('User-agent', ident)
+        
+        return buildopener.open(datareq).read().decode("utf-8")
+
     
-    datareq = urllib.request.Request(url)
-    datareq.add_header('User-agent', ident)
-    
-    return buildopener.open(datareq).read().decode("utf-8")

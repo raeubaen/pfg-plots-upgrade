@@ -59,7 +59,7 @@ def main():
             #instantiate the plugins class
             instance.process_one_run(item)
         #create the history plot
-        instance.create_history_plots()
+        #instance.create_history_plots()
         print("\n")
         
 if __name__ == "__main__":

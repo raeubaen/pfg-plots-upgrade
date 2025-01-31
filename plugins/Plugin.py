@@ -12,11 +12,11 @@ class Plugin:
         self.buildopener = buildopener
         self.folder = folder  #given in the specific class
         self.plot_name = plot_name  #given in the specific class
-
+        self.serverurl_online = " " #given in the specific class
         
     #take the json from the DQM and converting into a root object
-    def get_root_object(self, run_info):
-        json_object = dqm_get_json(self.buildopener, run_info["run"], run_info["dataset"], self.folder, self.plot_name)
+    def get_root_object(self, run_info, serverurl_online):
+        json_object = dqm_get_json(self.buildopener, run_info["run"], run_info["dataset"], self.folder, self.plot_name, serverurl_online)
         return ROOT.TBufferJSON.ConvertFromJSON(str(json_object))
 
     

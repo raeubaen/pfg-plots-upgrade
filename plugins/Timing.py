@@ -14,7 +14,7 @@ class Timing(Plugin):
     #process single run to extract the mean and fill the _data dict  
     def process_one_run(self, run_info):
         #take the root object from the json
-        one_run_root_object = self.get_root_object(run_info)
+        one_run_root_object = self.get_root_object(run_info, "")
         run_number = run_info["run"]
         
         #fit function and parameters for the first fit
@@ -105,3 +105,4 @@ class Timing(Plugin):
         c.Update()
         c.SaveAs(f"/eos/user/d/delvecch/www/PFG/Timing_mean_EB.pdf")
         c.SaveAs(f"/eos/user/d/delvecch/www/PFG/Timing_mean_EB.png")
+        c.SaveAs(f"/eos/user/d/delvecch/www/PFG/Timing_mean_EB.root")
