@@ -14,8 +14,8 @@ class Timing(Plugin):
     #process single run to extract the mean and fill the _data dict  
     def process_one_run(self, run_info):
         #take the root object from the json
-        one_run_root_object = self.get_root_object(run_info, "")
         run_number = run_info["run"]
+        one_run_root_object = self.get_root_object(run_info)
         
         #fit function and parameters for the first fit
         xmin = one_run_root_object.GetXaxis().GetXmin()

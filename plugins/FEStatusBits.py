@@ -10,7 +10,7 @@ from Plugin import Plugin
 
 
 def df_to_hist(row, hist, tower_list, run_list):
-    hist.Fill(run_list.index(row.run)+1, tower_list.index(row.tower)+1, row.value)
+    hist.Fill(run_list.index(row["run"])+1, tower_list.index(row["tower"])+1, row["value"])
 
 
 class FEStatusBits(Plugin):
@@ -31,8 +31,7 @@ class FEStatusBits(Plugin):
         for i, EBsupermodule in enumerate(EBsupermodules_list):
             self.folder = "EcalBarrel/EBStatusFlagsTask/FEStatus/"
             self.plot_name = f"EBSFT front-end status bits {EBsupermodule}"
-            one_run_root_object = self.get_root_object(run_info, "")
-            run_number = run_info["run"]
+            one_run_root_object = self.get_root_object(run_info)
             nbinsx = one_run_root_object.GetNbinsX()
             nbinsy = one_run_root_object.GetNbinsY()
             yproj = one_run_root_object.ProjectionY("yproj", 1, 1)
@@ -52,8 +51,7 @@ class FEStatusBits(Plugin):
         for i, EEsupermodule in enumerate(EEsupermodules_list):
             self.folder = "EcalEndcap/EEStatusFlagsTask/FEStatus/"
             self.plot_name = f"EESFT front-end status bits {EEsupermodule}"
-            one_run_root_object = self.get_root_object(run_info, "")
-            run_number = run_info["run"]
+            one_run_root_object = self.get_root_object(run_info)
             nbinsx = one_run_root_object.GetNbinsX()
             nbinsy = one_run_root_object.GetNbinsY()
             yproj = one_run_root_object.ProjectionY("yproj", 1, 1)
@@ -73,7 +71,6 @@ class FEStatusBits(Plugin):
         
     #history plot function
     def create_history_plots(self):
-        #ROOT.gROOT.LoadMacro("rootlogon1.C")
         available_runs = self.get_available_runs()
         run_dict = {"tower": [], "status": [], "value": [], "run": []}
         for i, run in enumerate(available_runs):

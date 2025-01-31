@@ -1,10 +1,8 @@
 import os, sys, urllib.request, urllib.error, urllib.parse, http.client, json
 import array
 
-#from cert_opener import X509CertAuth, X509CertOpen
-
 ident = "DQMToJson/1.0 python/%d.%d.%d" % sys.version_info[:3]
-serverurl = 'https://cmsweb.cern.ch/dqm/offline'
+
 
 
 def x509_params():
@@ -49,10 +47,12 @@ def x509_params():
 
 def dqm_get_json(buildopener, run, dataset, folder, plotname, serverurl_online):
     if (serverurl_online == "online"):
+        serverurl = 'https://cmsweb.cern.ch/dqm/online'
         dataset = "/Global/Online/ALL/"
         path = f"jsrootfairy/archive/{run}/{dataset}/{folder}/{urllib.parse.quote(plotname)}"
         path = path.replace("//", "/")
         url = f"{serverurl}/{path}"
+        print(url)
 
         datareq = urllib.request.Request(url)
         datareq.add_header('User-agent', ident)
@@ -60,6 +60,7 @@ def dqm_get_json(buildopener, run, dataset, folder, plotname, serverurl_online):
         return buildopener.open(datareq).read().decode("utf-8")
 
     else:
+        serverurl = 'https://cmsweb.cern.ch/dqm/offline'
         path = f"jsrootfairy/archive/{run}/{dataset}/{folder}/{urllib.parse.quote(plotname)}"
         path = path.replace("//", "/")
         url = f"{serverurl}/{path}"
@@ -68,5 +69,3 @@ def dqm_get_json(buildopener, run, dataset, folder, plotname, serverurl_online):
         datareq.add_header('User-agent', ident)
         
         return buildopener.open(datareq).read().decode("utf-8")
-
-    

@@ -1,1 +1,2 @@
-{"Plugins": ["ReadoutFlagsDropped"]}
+{"Plugins": ["Timing", "FEStatusBits", "ReadoutFlagsDropped"]}
+

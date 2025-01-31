@@ -40,6 +40,7 @@ def main():
 
     #read the plugins
     plugins = load_plugins("./conf.json")
+    #plugins = load_plugins("./conf_prova.json")
     print(f"List of plugins: {plugins}")
     
     #plugins directory path
@@ -59,7 +60,7 @@ def main():
             #instantiate the plugins class
             instance.process_one_run(item)
         #create the history plot
-        #instance.create_history_plots()
+        instance.create_history_plots()
         print("\n")
         
 if __name__ == "__main__":
