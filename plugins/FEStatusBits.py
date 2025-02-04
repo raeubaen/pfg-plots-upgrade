@@ -85,7 +85,7 @@ class FEStatusBits(Plugin):
         run_df["tower_num"] = run_df["tower_num"].astype(int)
         run_df["tt_num"] = run_df["tt_num"].astype(int)
         run_df["detector_priority"] = run_df["detector"].map({"EB": 0, "EE": 1})
-        run_df = run_df.sort_values(by=["detector_priority", "tower_num", "tt_num"]).drop(columns=["detector_priority"])
+        run_df = run_df.sort_values(by=["detector_priority", "tower_num", "tt_num"]).drop(columns=["detector_priority", "tower_num", "tt_num"])
 
         #general settings for the canvas
         ROOT.gStyle.SetNumberContours(255)

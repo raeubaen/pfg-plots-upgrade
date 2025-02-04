@@ -1,7 +1,7 @@
 import csv
 
-columns_to_extract = [0, 1, 2, 9, 10, 18, 19]
-headers = ["fed", "tcc", "tower", "ieta", "iphi", "ietatt", "iphitt"]
+columns_to_extract = [0, 1, 2, 5, 9, 10, 11, 12, 13, 18, 19]
+headers = ["fed", "tcc", "tower", "ccu", "ieta", "iphi", "ix", "iy", "iz", "ietatt", "iphitt"]
 
 input_file = "ecalchannels_db.txt"
 output_file = "ecalchannels.csv"

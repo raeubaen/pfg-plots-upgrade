@@ -27,7 +27,8 @@ class ReadoutFlagsDropped(Plugin):
         "EB-10": 619, "EB-09": 618, "EB-08": 617, "EB-07": 616, "EB-06": 615, "EB-05": 614, "EB-04": 613, "EB-03": 612, "EB-02": 611,
         "EB-01": 610, "EB+01": 628, "EB+02": 629, "EB+03": 630, "EB+04": 631, "EB+05": 632, "EB+06": 633, "EB+07": 634, "EB+08": 635,
         "EB+09": 636, "EB+10": 637, "EB+11": 638, "EB+12": 639, "EB+13": 640, "EB+14": 641, "EB+15": 642, "EB+16": 643, "EB+17": 644,
-        "EB+18": 645}
+        "EB+18": 645, "EE-09": 603, "EE-08": 602, "EE-07": 601, "EE-06": 609, "EE-05": 608, "EE-04": 607, "EE-03": 606, "EE-02": 605, 
+        "EE-01": 604, "EE+01": 649, "EE+02": 650, "EE+03": 651, "EE+04": 652, "EE+05": 653, "EE+06": 654, "EE+07": 646, "EE+08": 647, "EE+09": 648}
         #dictionary with single run info
         run_dict = {"tower": [], "value": []}
 
@@ -35,7 +36,6 @@ class ReadoutFlagsDropped(Plugin):
         self.folder = "EcalBarrel/EBSelectiveReadoutTask/"
         self.plot_name = "EBSRT FR Flagged Dropped Readout"
         self.serverurl_online = "online"
-        print(self.serverurl_online)
         one_run_root_object = self.get_root_object(run_info)
         nbinsx = one_run_root_object.GetNbinsX()
         nbinsy = one_run_root_object.GetNbinsY()
@@ -50,6 +50,66 @@ class ReadoutFlagsDropped(Plugin):
                     tt = df_phi_eta["tower"].iloc[0]
                     run_dict["tower"].append(f"{EB_SM} TT{tt}")
                     run_dict["value"].append(one_run_root_object.GetBinContent(ix, iy))
+        
+        #endcap- single run
+        self.folder = "EcalEndcap/EESelectiveReadoutTask/"
+        self.plot_name = "EESRT FR Flagged Dropped Readout EE -"
+        self.serverurl_online = "online"
+        one_run_root_object = self.get_root_object(run_info)
+        nbinsx = one_run_root_object.GetNbinsX()
+        nbinsy = one_run_root_object.GetNbinsY()
+        for iy in range(1, nbinsy+1):
+            for ix in range(1, nbinsx+1):
+                if one_run_root_object.GetBinContent(ix, iy) != 0:
+                    x = one_run_root_object.GetXaxis().GetBinUpEdge(ix) #because the endcap shape is different wrt the barrel one
+                    y = one_run_root_object.GetYaxis().GetBinUpEdge(iy) #because the endcap shape is different wrt the barrel one
+                    df_x = df[df["ix"] == x]
+                    df_x_y = df_x[df_x["iy"] == y]
+                    if df_x_y.empty: #if the df is empty, I choose the other edge of the y bin because of the endcap shape
+                        y = one_run_root_object.GetYaxis().GetBinLowEdge(iy)
+                        df_x = df[df["ix"] == x]
+                        df_x_y = df_x[df_x["iy"] == y]
+                        df_x_y_m = df_x_y[df_x_y["fed"] <= 609] #choose the EE- fed
+                        EEm_SM = next((key for key, fe in supermodules_FED.items() if fe == df_x_y_m["fed"].iloc[0]), None)
+                        ccu = df_x_y_m["ccu"].iloc[0]
+                        run_dict["tower"].append(f"{EEm_SM} CCU{ccu}")
+                        run_dict["value"].append(one_run_root_object.GetBinContent(ix, iy))
+                    else:
+                        df_x_y_m = df_x_y[df_x_y["fed"] <= 609] #choose the EE- fed
+                        EEm_SM = next((key for key, fe in supermodules_FED.items() if fe == df_x_y_m["fed"].iloc[0]), None)
+                        ccu = df_x_y_m["ccu"].iloc[0]
+                        run_dict["tower"].append(f"{EEm_SM} CCU{ccu}")
+                        run_dict["value"].append(one_run_root_object.GetBinContent(ix, iy))
+
+        #endcap+ single run
+        self.folder = "EcalEndcap/EESelectiveReadoutTask/"
+        self.plot_name = "EESRT FR Flagged Dropped Readout EE +"
+        self.serverurl_online = "online"
+        one_run_root_object = self.get_root_object(run_info)
+        nbinsx = one_run_root_object.GetNbinsX()
+        nbinsy = one_run_root_object.GetNbinsY()
+        for iy in range(1, nbinsy+1):
+            for ix in range(1, nbinsx+1):
+                if one_run_root_object.GetBinContent(ix, iy) != 0:
+                    x = one_run_root_object.GetXaxis().GetBinUpEdge(ix) #because the endcap shape is different wrt the barrel one
+                    y = one_run_root_object.GetYaxis().GetBinUpEdge(iy) #because the endcap shape is different wrt the barrel one
+                    df_x = df[df["ix"] == x]
+                    df_x_y = df_x[df_x["iy"] == y]
+                    if df_x_y.empty: #if the df is empty, I choose the other edge of the y bin because of the endcap shape
+                        y = one_run_root_object.GetYaxis().GetBinLowEdge(iy)
+                        df_x = df[df["ix"] == x]
+                        df_x_y = df_x[df_x["iy"] == y]
+                        df_x_y_p = df_x_y[df_x_y["fed"] >= 646] #choose the EE+ fed
+                        EEp_SM = next((key for key, fe in supermodules_FED.items() if fe == df_x_y_p["fed"].iloc[0]), None)
+                        ccu = df_x_y_p["ccu"].iloc[0]
+                        run_dict["tower"].append(f"{EEm_SM} CCU{ccu}")
+                        run_dict["value"].append(one_run_root_object.GetBinContent(ix, iy))
+                    else:
+                        df_x_y_p = df_x_y[df_x_y["fed"] >= 646] #choose the EE+ fed
+                        EEp_SM = next((key for key, fe in supermodules_FED.items() if fe == df_x_y_p["fed"].iloc[0]), None)
+                        ccu = df_x_y_p["ccu"].iloc[0]
+                        run_dict["tower"].append(f"{EEp_SM} CCU{ccu}")
+                        run_dict["value"].append(one_run_root_object.GetBinContent(ix, iy))
 
         #fill _data inside generic Plugin class
         self.fill_data_one_run(run_info, run_dict)
@@ -64,12 +124,16 @@ class ReadoutFlagsDropped(Plugin):
             for key in data_one_run:
                 run_dict[key] += data_one_run[key]
             run_dict["run"] += [run for j in range(len(data_one_run["tower"]))]
+
         #from dict to dataframe
         run_df = pd.DataFrame(run_dict)
-        run_df[["sm_num", "tt_num"]] = run_df["tower"].str.extract(r'EB([+-]?\d+)\s+TT(\d+)')
+        run_df[["detector", "sm_num", "tt_ccu", "tt_num"]] = run_df["tower"].str.extract(r'(EB|EE)([+-]?\d+)\s+(TT|CCU)(\d+)')
         run_df["sm_num"] = run_df["sm_num"].astype(int)
         run_df["tt_num"] = run_df["tt_num"].astype(int)
-        run_df = run_df.sort_values(by=["sm_num", "tt_num"]).drop(columns=["sm_num", "tt_num"])
+        run_df["detector_priority"] = run_df["detector"].map({"EB": 0, "EE": 1})
+        run_df["tt_ccu_priority"] = run_df["tt_ccu"].map({"TT": 0, "CCU": 1})
+        run_df = run_df.sort_values(by=["detector_priority", "sm_num", "tt_ccu_priority", "tt_num"]).drop(columns=["detector_priority",
+        "sm_num", "tt_ccu_priority", "tt_num"])
 
         #general settings for the canvas
         ROOT.gStyle.SetNumberContours(255)
@@ -94,7 +158,7 @@ class ReadoutFlagsDropped(Plugin):
                 hist.GetYaxis().SetBinLabel(iy, str(tower))
                 
             #canvas options
-            c = ROOT.TCanvas("c", "", 3600, 2250)
+            c = ROOT.TCanvas("c", "", 3600, 2000)
             c.SetGrid()
             ROOT.gStyle.SetLineColor(ROOT.kGray+1)
             ROOT.gStyle.SetLineStyle(3)
@@ -144,7 +208,7 @@ class ReadoutFlagsDropped(Plugin):
                     subhist.GetYaxis().SetBinLabel(iy+1, str(tower_list[ybin_start+iy]))
 
                 #canvas options
-                c = ROOT.TCanvas("c", "", 3600, 2250)
+                c = ROOT.TCanvas("c", "", 3600, 2000)
                 c.SetGrid()
                 ROOT.gStyle.SetLineColor(ROOT.kGray+1)
                 ROOT.gStyle.SetLineStyle(3)
