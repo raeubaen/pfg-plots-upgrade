@@ -166,7 +166,7 @@ def hist_config(run_list, tower_list, hist, ybin_start, ybin_end, name, eos_site
     canva.SaveAs(f"{eos_site}{name}.root")
 
 
-class ReadoutFlagsDropped(Plugin):
+class ReadoutFlagsForced(Plugin):
     def __init__(self, buildopener):
         Plugin.__init__(self, buildopener, folder="", plot_name="")
 
@@ -185,26 +185,28 @@ class ReadoutFlagsDropped(Plugin):
         #dictionary with single run info
         run_dict = {"tower": [], "value": []}
 
-        #EB
+        #barrel single run
         self.folder = "EcalBarrel/EBSelectiveReadoutTask/"
-        self.plot_name = "EBSRT FR Flagged Dropped Readout"
+        self.plot_name = "EBSRT readout unit with SR forced"
         self.serverurl_online = "online"
         one_run_root_object = self.get_root_object(run_info)
         read_hist(one_run_root_object, "EB", df, supermodules_FED, run_dict)
         
-        #EE-
+        #endcap- single run
         self.folder = "EcalEndcap/EESelectiveReadoutTask/"
-        self.plot_name = "EESRT FR Flagged Dropped Readout EE -"
+        self.plot_name = "EESRT readout unit with SR forced EE -"
         self.serverurl_online = "online"
         one_run_root_object = self.get_root_object(run_info)
         read_hist(one_run_root_object, "EE-", df, supermodules_FED, run_dict)
 
-        #EE+
+        #endcap+ single run
         self.folder = "EcalEndcap/EESelectiveReadoutTask/"
-        self.plot_name = "EESRT FR Flagged Dropped Readout EE +"
+        self.plot_name = "EESRT readout unit with SR forced EE +"
         self.serverurl_online = "online"
         one_run_root_object = self.get_root_object(run_info)
         read_hist(one_run_root_object, "EE+", df, supermodules_FED, run_dict)
+
+        print(run_dict)
 
         #fill _data inside generic Plugin class
         self.fill_data_one_run(run_info, run_dict)
@@ -235,21 +237,21 @@ class ReadoutFlagsDropped(Plugin):
         tower_list = list(pd.unique(run_df.tower))
         run_list = list(available_runs)
         #run_list = list(pd.unique(run_df.run))
-        hist = ROOT.TH2F(f"ReadoutFlagsDropped", "", len(run_list), 0., len(run_list)+1, len(tower_list), 0., len(tower_list)+1)
+        hist = ROOT.TH2F(f"ReadoutFlagsForced", "", len(run_list), 0., len(run_list)+1, len(tower_list), 0., len(tower_list)+1)
         run_df.apply(lambda row: df_to_hist(row, hist, tower_list, run_list), axis=1)
 
-        #filling the subhistograms
+        #filling the subhistogram
         nbinsy = hist.GetNbinsY()
         max_bins = 15
         n_subhist = nbinsy // max_bins + (1 if nbinsy % max_bins > 0 else 0)
         for i in range(n_subhist):
             ybin_start = i * max_bins
             ybin_end = min((i+1) * max_bins, nbinsy)
-            subhist = ROOT.TH2F(f"ReadoutFlagsDropped_part{i+1}", "", len(run_list), 0., len(run_list)+1, ybin_end-ybin_start, ybin_start, ybin_end+1)
+            subhist = ROOT.TH2F(f"ReadoutFlagsForced_part{i+1}", "", len(run_list), 0., len(run_list)+1, ybin_end-ybin_start, ybin_start, ybin_end+1)
             for ix in range(len(run_list)):
                 for iy in range(ybin_end-ybin_start):
                     subhist.SetBinContent(ix+1, iy+1, hist.GetBinContent(ix+1, ybin_start+iy+1))
             if n_subhist == 1:
-                hist_config(run_list, tower_list, subhist, ybin_start, ybin_end, "ReadoutFlagsDropped", "/eos/user/d/delvecch/www/PFG/")
+                hist_config(run_list, tower_list, subhist, ybin_start, ybin_end, "ReadoutFlagsForced", "/eos/user/d/delvecch/www/PFG/")
             else:
-                hist_config(run_list, tower_list, subhist, ybin_start, ybin_end, f"ReadoutFlagsDropped_part{i+1}", "/eos/user/d/delvecch/www/PFG/")
+                hist_config(run_list, tower_list, subhist, ybin_start, ybin_end, f"ReadoutFlagsForced_part{i+1}", "/eos/user/d/delvecch/www/PFG/")
