@@ -1,6 +1,7 @@
 import os, sys, urllib.request, urllib.error, urllib.parse, http.client
 import ROOT
 import json
+import cppyy
 
 from json_handler import dqm_get_json
 
@@ -14,10 +15,17 @@ class Plugin:
         self.plot_name = plot_name  #given in the specific class
         self.serverurl_online = " " #given in the specific class
         
+
     #take the json from the DQM and converting into a root object
     def get_root_object(self, run_info):
-        json_object = dqm_get_json(self.buildopener, run_info["run"], run_info["dataset"], self.folder, self.plot_name, self.serverurl_online)
-        return ROOT.TBufferJSON.ConvertFromJSON(str(json_object))
+        json_str = dqm_get_json(self.buildopener, run_info["run"], run_info["dataset"], self.folder, self.plot_name, self.serverurl_online)
+        try:
+            return ROOT.TBufferJSON.ConvertFromJSON(str(json_str))
+        except cppyy.gbl.nlohmann.detail.out_of_range:
+            json_object = json.loads(json_str)
+            json_object["fZmax"] = 1e+10
+            json_object["fZmin"] = 0
+            return ROOT.TBufferJSON.ConvertFromJSON(json.dumps(json_object))
 
     
     #fill the _data dict with the one run data

@@ -26,10 +26,10 @@ def df_to_hist(row, hist, tower_list, run_list):
     hist.Fill(run_list.index(row["run"])+1, tower_list.index(row["tower"])+1, row["value"])
 
 
-def general_settings(n_contours, label_size = 0.06):
+def general_settings(n_contours):
     ROOT.gStyle.SetNumberContours(n_contours)
     ROOT.gStyle.SetPalette(ROOT.kBeach)
-    ROOT.gStyle.SetLabelSize(label_size)
+    ROOT.TColor.InvertPalette()
 
 
 def hist_config(run_list, tower_list, hist, ybin_start, ybin_end, status, eos_site):
@@ -50,9 +50,9 @@ def hist_config(run_list, tower_list, hist, ybin_start, ybin_end, status, eos_si
     #hist settings
     hist.SetStats(False)
     hist.GetXaxis().LabelsOption("v")
-    hist.GetXaxis().SetLabelSize(0.06)
-    hist.GetYaxis().SetLabelSize(0.06)
-    hist.GetZaxis().SetLabelSize(0.06)
+    hist.GetXaxis().SetLabelSize(0.05)
+    hist.GetYaxis().SetLabelSize(0.05)
+    hist.GetZaxis().SetLabelSize(0.05)
     hist.GetXaxis().SetTickLength(0.03)
     hist.GetYaxis().SetTickLength(0.02)
     hist.GetZaxis().SetTickLength(0.02)
@@ -77,12 +77,15 @@ class FEStatusBits(Plugin):
     #process single run, all the supermodules for both barrel and endcap
     def process_one_run(self, run_info):
         #labels of the trigger towers bits
-        labels = ["ENABLED", "DISABLED", "TIMEOUT", "HEADERERROR", "CHANNELID", "LINKERROR", "BLOCKSIZE", "SUPPRESSED","FORCEDFULLSUPP", "L1ADESYNC", "BXDESYNC", "L1ABXDESYNC", "FIFOFULL", "HPARITY", "VPARITY", "FORCEDZS"]        
+        labels = ["ENABLED", "DISABLED", "TIMEOUT", "HEADERERROR", "CHANNELID", "LINKERROR", "BLOCKSIZE", "SUPPRESSED","FORCEDFULLSUPP",
+        "L1ADESYNC", "BXDESYNC", "L1ABXDESYNC", "FIFOFULL", "HPARITY", "VPARITY", "FORCEDZS"]        
         #dictionary with single run status info
         run_dict = {"tower": [], "status": [], "value": []}
         
         #barrel supermodules
-        EBsupermodules_list = ["EB-18", "EB-17", "EB-16", "EB-15", "EB-14", "EB-13", "EB-12", "EB-11", "EB-10", "EB-09", "EB-08", "EB-07", "EB-06", "EB-05", "EB-04", "EB-03", "EB-02", "EB-01", "EB+01", "EB+02", "EB+03", "EB+04", "EB+05", "EB+06", "EB+07", "EB+08", "EB+09", "EB+10", "EB+11", "EB+12", "EB+13", "EB+14", "EB+15", "EB+16", "EB+17", "EB+18"]
+        EBsupermodules_list = ["EB-18", "EB-17", "EB-16", "EB-15", "EB-14", "EB-13", "EB-12", "EB-11", "EB-10", "EB-09", "EB-08",
+        "EB-07", "EB-06", "EB-05", "EB-04", "EB-03", "EB-02", "EB-01", "EB+01", "EB+02", "EB+03", "EB+04", "EB+05", "EB+06", "EB+07",
+        "EB+08", "EB+09", "EB+10", "EB+11", "EB+12", "EB+13", "EB+14", "EB+15", "EB+16", "EB+17", "EB+18"]
         #loop on barrel supermodules
         for i, EBsupermodule in enumerate(EBsupermodules_list):
             self.folder = "EcalBarrel/EBStatusFlagsTask/FEStatus/"
@@ -105,8 +108,7 @@ class FEStatusBits(Plugin):
         
     #history plot function
     def create_history_plots(self):
-        general_settings(255, label_size = 0.06)
-        ROOT.TColor.InvertPalette()
+        general_settings(255)
         available_runs = self.get_available_runs()
         run_dict = {"tower": [], "status": [], "value": [], "run": []}
         for i, run in enumerate(available_runs):
@@ -125,7 +127,6 @@ class FEStatusBits(Plugin):
         #creating the initial histograms
         statuses = {"ENABLED": 1, "DISABLED": 2, "TIMEOUT": 3, "HEADERERROR": 4, "CHANNELID": 5, "LINKERROR": 6, "BLOCKSIZE": 7, "SUPPRESSED": 8,"FORCEDFULLSUPP": 9, "L1ADESYNC": 10, "BXDESYNC": 11, "L1ABXDESYNC": 12, "FIFOFULL": 13, "HPARITY": 14, "VPARITY": 15, "FORCEDZS": 16}
         for i, stat in enumerate(statuses):
-            print(stat)
             curr_df = run_df[run_df.status == statuses[stat]]
             tower_list = list(pd.unique(curr_df.tower))
             run_list = list(available_runs)

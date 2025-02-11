@@ -1,2 +1,2 @@
-{"Plugins": ["Timing", "FEStatusBits", "ReadoutFlagsDropped", "ReadoutFlagsForced"]}
+{"Plugins": ["Timing", "FEStatusBits", "ReadoutFlagsDropped", "ReadoutFlagsForced", "MeanChannels"]}
 

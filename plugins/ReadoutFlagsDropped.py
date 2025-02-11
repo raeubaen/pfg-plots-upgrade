@@ -123,12 +123,6 @@ def df_to_hist(row, hist, tower_list, run_list):
     hist.Fill(run_list.index(row["run"])+1, tower_list.index(row["tower"])+1, row["value"])
 
 
-def general_settings(n_contours, label_size = 0.06):
-    ROOT.gStyle.SetNumberContours(n_contours)
-    ROOT.gStyle.SetPalette(ROOT.kBeach)
-    ROOT.gStyle.SetLabelSize(label_size)
-
-
 def hist_config(run_list, tower_list, hist, ybin_start, ybin_end, name, eos_site):
     #axis labels
     for ix, run in enumerate(run_list, start=1):
@@ -147,9 +141,9 @@ def hist_config(run_list, tower_list, hist, ybin_start, ybin_end, name, eos_site
     #hist settings
     hist.SetStats(False)
     hist.GetXaxis().LabelsOption("v")
-    hist.GetXaxis().SetLabelSize(0.06)
+    hist.GetXaxis().SetLabelSize(0.05)
     hist.GetYaxis().SetLabelSize(0.05)
-    hist.GetZaxis().SetLabelSize(0.06)
+    hist.GetZaxis().SetLabelSize(0.05)
     hist.GetXaxis().SetTickLength(0.03)
     hist.GetYaxis().SetTickLength(0.02)
     hist.GetZaxis().SetTickLength(0.02)
@@ -212,7 +206,6 @@ class ReadoutFlagsDropped(Plugin):
 
     #history plot function
     def create_history_plots(self):
-        general_settings(255, label_size = 0.06)
         available_runs = self.get_available_runs()
         run_dict = {"tower": [], "value": [], "run": []}
         for i, run in enumerate(available_runs):
@@ -234,7 +227,6 @@ class ReadoutFlagsDropped(Plugin):
         #creating the initial histogram
         tower_list = list(pd.unique(run_df.tower))
         run_list = list(available_runs)
-        #run_list = list(pd.unique(run_df.run))
         hist = ROOT.TH2F(f"ReadoutFlagsDropped", "", len(run_list), 0., len(run_list)+1, len(tower_list), 0., len(tower_list)+1)
         run_df.apply(lambda row: df_to_hist(row, hist, tower_list, run_list), axis=1)
 
