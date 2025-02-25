@@ -46,25 +46,17 @@ def x509_params():
 
 
 def dqm_get_json(buildopener, run, dataset, folder, plotname, serverurl_online):
-    if (serverurl_online == "online"):
-        serverurl = 'https://cmsweb.cern.ch/dqm/online'
-        dataset = "/Global/Online/ALL/"
-        path = f"jsrootfairy/archive/{run}/{dataset}/{folder}/{urllib.parse.quote(plotname)}"
-        path = path.replace("//", "/")
-        url = f"{serverurl}/{path}"
+    if dataset != "/Global/Online/ALL/":
+        print(f"Error in dataset of run {run}, it should be: /Global/Online/ALL/\nControl the runlist file in input")
+        print("Exiting from the execution of the program")
+        sys.exit(1)
 
-        datareq = urllib.request.Request(url)
-        datareq.add_header('User-agent', ident)
+    serverurl = 'https://cmsweb.cern.ch/dqm/online'
+    path = f"jsrootfairy/archive/{run}/{dataset}/{folder}/{urllib.parse.quote(plotname)}"
+    path = path.replace("//", "/")
+    url = f"{serverurl}/{path}"
 
-        return buildopener.open(datareq).read().decode("utf-8")
+    datareq = urllib.request.Request(url)
+    datareq.add_header('User-agent', ident)
 
-    else:
-        serverurl = 'https://cmsweb.cern.ch/dqm/offline'
-        path = f"jsrootfairy/archive/{run}/{dataset}/{folder}/{urllib.parse.quote(plotname)}"
-        path = path.replace("//", "/")
-        url = f"{serverurl}/{path}"
-        
-        datareq = urllib.request.Request(url)
-        datareq.add_header('User-agent', ident)
-        
-        return buildopener.open(datareq).read().decode("utf-8")
+    return buildopener.open(datareq).read().decode("utf-8")

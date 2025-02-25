@@ -33,11 +33,6 @@ def read_hist(one_run_root_object, run_dict, supermodule):
 def df_to_hist(row, hist, tower_list, run_list):
     hist.Fill(run_list.index(row["run"])+1, tower_list.index(row["SM_ch"])+1, row["value"])
 
-"""
-def general_settings(n_contours):
-    ROOT.gStyle.SetNumberContours(n_contours)
-    ROOT.gStyle.SetPalette(ROOT.kBeach)
-"""
 
 def hist_config(run_list, tower_list, hist, ybin_start, ybin_end, name, eos_site, option=0): #option = 0 -> z in [0, 1], option = 1 -> z > 300, option = 2 -> z < 100
     #axis labels
@@ -46,11 +41,11 @@ def hist_config(run_list, tower_list, hist, ybin_start, ybin_end, name, eos_site
     for iy in range(ybin_end-ybin_start):
         hist.GetYaxis().SetBinLabel(iy+1, str(tower_list[ybin_start+iy]))
     #canva settings
-    canva = ROOT.TCanvas(f"canva_{name}", "", 3600, 2000)
+    canva = ROOT.TCanvas(f"canva_{name}", "", 3600, 2250)
     canva.SetGrid()
     ROOT.gStyle.SetLineColor(ROOT.kGray+1)
     ROOT.gStyle.SetLineStyle(3)
-    canva.SetLeftMargin(0.2)
+    canva.SetLeftMargin(0.18)
     canva.SetRightMargin(0.12)
     canva.SetTopMargin(0.05)
     canva.SetBottomMargin(0.15)
@@ -98,7 +93,6 @@ class MeanChannels(Plugin):
         for i, EBsupermodule in enumerate(EBsupermodules_list):
             self.folder = "EcalBarrel/EBPedestalOnlineTask/Gain12/"
             self.plot_name = f"EBPOT pedestal {EBsupermodule} G12"
-            self.serverurl_online = "online"
             one_run_root_object = self.get_root_object(run_info)
             read_hist(one_run_root_object, run_dict, EBsupermodule)
 

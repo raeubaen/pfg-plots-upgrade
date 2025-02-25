@@ -16,12 +16,17 @@ def read_hist(one_run_root_object, detector, df, supermodules_FED, run_dict):
                 if one_run_root_object.GetBinContent(ix, iy) != 0:
                     x = one_run_root_object.GetXaxis().GetBinLowEdge(ix)
                     y = one_run_root_object.GetYaxis().GetBinLowEdge(iy)
+                    print(f"Found not empty bin: ({x}, {y})")
                     df_phi = df[df["iphi"] == x+1] #+1 because the low edge belongs to the previous SM
                     df_phi_eta = df_phi[df_phi["ieta"] == y+1] #+1 because the low edge belongs to the previous SM
+                    print(f"{df_phi_eta}")
                     EB_SM = next((key for key, fe in supermodules_FED.items() if fe == df_phi_eta["fed"].iloc[0]), None)
                     tt = df_phi_eta["tower"].iloc[0]
+                    ccu = df_phi_eta["ccu"].iloc[0]
                     tcc = df_phi_eta["tcc"].iloc[0]
-                    run_dict["tower"].append(f"{EB_SM} TCC{tcc} TT{tt}")
+                    print(f"{EB_SM} TCC{tcc} TT{tt} CCU{ccu}")
+                    print(f"{one_run_root_object.GetBinContent(ix, iy)}")
+                    run_dict["tower"].append(f"{EB_SM} TCC{tcc} TT{tt} CCU{ccu}")
                     run_dict["value"].append(one_run_root_object.GetBinContent(ix, iy))
     if detector == "EE-":
         for iy in range(1, nbinsy+1):
@@ -29,25 +34,31 @@ def read_hist(one_run_root_object, detector, df, supermodules_FED, run_dict):
                 if one_run_root_object.GetBinContent(ix, iy) != 0:
                     x = one_run_root_object.GetXaxis().GetBinUpEdge(ix)
                     y = one_run_root_object.GetYaxis().GetBinUpEdge(iy)
+                    print(f"Found not empty bin: ({x}, {y})")
                     df_x = df[df["ix"] == x]
                     df_x_y = df_x[df_x["iy"] == y]
+                    print(f"{df_x_y}")
                     if not df_x_y.empty:
                         df_x_y_m = df_x_y[df_x_y["fed"] <= 609] #choose the EE- fed
                         EEm_SM = next((key for key, fe in supermodules_FED.items() if fe == df_x_y_m["fed"].iloc[0]), None)
+                        tt = df_x_y_m["tower"].iloc[0]
                         ccu = df_x_y_m["ccu"].iloc[0]
                         tcc = df_x_y_m["tcc"].iloc[0]
-                        run_dict["tower"].append(f"{EEm_SM} TCC{tcc} CCU{ccu}")
+                        print(f"{EEm_SM} TCC{tcc} TT{tt} CCU{ccu}")
+                        print(f"{one_run_root_object.GetBinContent(ix, iy)}")
+                        run_dict["tower"].append(f"{EEm_SM} TCC{tcc} TT{tt} CCU{ccu}")
                         run_dict["value"].append(one_run_root_object.GetBinContent(ix, iy))
                     else:
+                        print(f"empty bin found")
                         y = one_run_root_object.GetYaxis().GetBinLowEdge(iy)
                         df_x = df[df["ix"] == x]
                         df_x_y = df_x[df_x["iy"] == y+1]
                         if not df_x_y.empty:
                             df_x_y_m = df_x_y[df_x_y["fed"] <= 609] #choose the EE- fed
                             EEm_SM = next((key for key, fe in supermodules_FED.items() if fe == df_x_y_m["fed"].iloc[0]), None)
-                            ccu = df_x_y_m["ccu"].iloc[0]
+                            tt = df_x_y_m["tower"].iloc[0]
                             tcc = df_x_y_m["tcc"].iloc[0]
-                            run_dict["tower"].append(f"{EEm_SM} TCC{tcc} CCU{ccu}")
+                            run_dict["tower"].append(f"{EEm_SM} TCC{tcc} TT{tt}")
                             run_dict["value"].append(one_run_root_object.GetBinContent(ix, iy))
                         else:
                             x = one_run_root_object.GetXaxis().GetBinLowEdge(ix)
@@ -56,9 +67,9 @@ def read_hist(one_run_root_object, detector, df, supermodules_FED, run_dict):
                             if not df_x_y.empty:
                                 df_x_y_m = df_x_y[df_x_y["fed"] <= 609] #choose the EE- fed
                                 EEm_SM = next((key for key, fe in supermodules_FED.items() if fe == df_x_y_m["fed"].iloc[0]), None)
-                                ccu = df_x_y_m["ccu"].iloc[0]
+                                tt = df_x_y_m["tower"].iloc[0]
                                 tcc = df_x_y_m["tcc"].iloc[0]
-                                run_dict["tower"].append(f"{EEm_SM} TCC{tcc} CCU{ccu}")
+                                run_dict["tower"].append(f"{EEm_SM} TCC{tcc} TT{tt}")
                                 run_dict["value"].append(one_run_root_object.GetBinContent(ix, iy))
                             else:
                                 y = one_run_root_object.GetYaxis().GetBinUpEdge(iy)
@@ -66,9 +77,9 @@ def read_hist(one_run_root_object, detector, df, supermodules_FED, run_dict):
                                 df_x_y = df_x[df_x["iy"] == y]
                                 df_x_y_m = df_x_y[df_x_y["fed"] <= 609] #choose the EE- fed
                                 EEm_SM = next((key for key, fe in supermodules_FED.items() if fe == df_x_y_m["fed"].iloc[0]), None)
-                                ccu = df_x_y_m["ccu"].iloc[0]
+                                tt = df_x_y_m["tower"].iloc[0]
                                 tcc = df_x_y_m["tcc"].iloc[0]
-                                run_dict["tower"].append(f"{EEm_SM} TCC{tcc} CCU{ccu}")
+                                run_dict["tower"].append(f"{EEm_SM} TCC{tcc} TT{tt}")
                                 run_dict["value"].append(one_run_root_object.GetBinContent(ix, iy))
     if detector == "EE+":
         for iy in range(1, nbinsy+1):
@@ -76,25 +87,31 @@ def read_hist(one_run_root_object, detector, df, supermodules_FED, run_dict):
                 if one_run_root_object.GetBinContent(ix, iy) != 0:
                     x = one_run_root_object.GetXaxis().GetBinUpEdge(ix)
                     y = one_run_root_object.GetYaxis().GetBinUpEdge(iy)
+                    print(f"Found not empty bin: ({x}, {y})")
                     df_x = df[df["ix"] == x]
                     df_x_y = df_x[df_x["iy"] == y]
+                    print(f"{df_x_y}")
                     if not df_x_y.empty:
                         df_x_y_p = df_x_y[df_x_y["fed"] >= 646] #choose the EE+ fed
                         EEp_SM = next((key for key, fe in supermodules_FED.items() if fe == df_x_y_p["fed"].iloc[0]), None)
+                        tt = df_x_y_p["tower"].iloc[0]
                         ccu = df_x_y_p["ccu"].iloc[0]
                         tcc = df_x_y_p["tcc"].iloc[0]
-                        run_dict["tower"].append(f"{EEp_SM} TCC{tcc} CCU{ccu}")
+                        print(f"{EEp_SM} TCC{tcc} TT{tt} CCU{ccu}")
+                        print(f"{one_run_root_object.GetBinContent(ix, iy)}")
+                        run_dict["tower"].append(f"{EEp_SM} TCC{tcc} TT{tt} CCU{ccu}")
                         run_dict["value"].append(one_run_root_object.GetBinContent(ix, iy))
                     else:
+                        print(f"empty bin found")
                         y = one_run_root_object.GetYaxis().GetBinLowEdge(iy)
                         df_x = df[df["ix"] == x]
                         df_x_y = df_x[df_x["iy"] == y+1]
                         if not df_x_y.empty:
                             df_x_y_p = df_x_y[df_x_y["fed"] >= 646] #choose the EE+ fed
                             EEp_SM = next((key for key, fe in supermodules_FED.items() if fe == df_x_y_p["fed"].iloc[0]), None)
-                            ccu = df_x_y_p["ccu"].iloc[0]
+                            tt = df_x_y_p["tower"].iloc[0]
                             tcc = df_x_y_p["tcc"].iloc[0]
-                            run_dict["tower"].append(f"{EEp_SM} TCC{tcc} CCU{ccu}")
+                            run_dict["tower"].append(f"{EEp_SM} TCC{tcc} TT{tt}")
                             run_dict["value"].append(one_run_root_object.GetBinContent(ix, iy))
                         else:
                             x = one_run_root_object.GetXaxis().GetBinLowEdge(ix)
@@ -103,9 +120,9 @@ def read_hist(one_run_root_object, detector, df, supermodules_FED, run_dict):
                             if not df_x_y.empty:
                                 df_x_y_p = df_x_y[df_x_y["fed"] >= 646] #choose the EE+ fed
                                 EEp_SM = next((key for key, fe in supermodules_FED.items() if fe == df_x_y_p["fed"].iloc[0]), None)
-                                ccu = df_x_y_p["ccu"].iloc[0]
+                                tt = df_x_y_p["tower"].iloc[0]
                                 tcc = df_x_y_p["tcc"].iloc[0]
-                                run_dict["tower"].append(f"{EEp_SM} TCC{tcc} CCU{ccu}")
+                                run_dict["tower"].append(f"{EEp_SM} TCC{tcc} TT{tt}")
                                 run_dict["value"].append(one_run_root_object.GetBinContent(ix, iy))
                             else:
                                 y = one_run_root_object.GetYaxis().GetBinUpEdge(iy)
@@ -113,54 +130,13 @@ def read_hist(one_run_root_object, detector, df, supermodules_FED, run_dict):
                                 df_x_y = df_x[df_x["iy"] == y]
                                 df_x_y_p = df_x_y[df_x_y["fed"] >= 646] #choose the EE+ fed
                                 EEp_SM = next((key for key, fe in supermodules_FED.items() if fe == df_x_y_p["fed"].iloc[0]), None)
-                                ccu = df_x_y_p["ccu"].iloc[0]
+                                tt = df_x_y_p["tower"].iloc[0]
                                 tcc = df_x_y_p["tcc"].iloc[0]
-                                run_dict["tower"].append(f"{EEp_SM} TCC{tcc} CCU{ccu}")
+                                run_dict["tower"].append(f"{EEp_SM} TCC{tcc} TT{tt}")
                                 run_dict["value"].append(one_run_root_object.GetBinContent(ix, iy))
 
 
-def df_to_hist(row, hist, tower_list, run_list):
-    hist.Fill(run_list.index(row["run"])+1, tower_list.index(row["tower"])+1, row["value"])
-
-
-def hist_config(run_list, tower_list, hist, ybin_start, ybin_end, name, eos_site):
-    #axis labels
-    for ix, run in enumerate(run_list, start=1):
-        hist.GetXaxis().SetBinLabel(ix, str(run))
-    for iy in range(ybin_end-ybin_start):
-        hist.GetYaxis().SetBinLabel(iy+1, str(tower_list[ybin_start+iy]))
-    #canva settings
-    canva = ROOT.TCanvas(f"canva_{name}", "", 3600, 2000)
-    canva.SetGrid()
-    ROOT.gStyle.SetLineColor(ROOT.kGray+1)
-    ROOT.gStyle.SetLineStyle(3)
-    canva.SetLeftMargin(0.2)
-    canva.SetRightMargin(0.12)
-    canva.SetTopMargin(0.05)
-    canva.SetBottomMargin(0.15)
-    #hist settings
-    hist.SetStats(False)
-    hist.GetXaxis().LabelsOption("v")
-    hist.GetXaxis().SetLabelSize(0.05)
-    hist.GetYaxis().SetLabelSize(0.05)
-    hist.GetZaxis().SetLabelSize(0.05)
-    hist.GetXaxis().SetTickLength(0.03)
-    hist.GetYaxis().SetTickLength(0.02)
-    hist.GetZaxis().SetTickLength(0.02)
-    hist.SetMinimum(0.)
-    hist.SetMaximum(1.)
-    hist.SetMarkerSize(1.5)
-    ROOT.gStyle.SetPaintTextFormat(".1e")
-    hist.Draw("text COLZ")
-    canva.Modified()
-    canva.Update()
-    #saving
-    canva.SaveAs(f"{eos_site}{name}.pdf")
-    canva.SaveAs(f"{eos_site}{name}.png")
-    canva.SaveAs(f"{eos_site}{name}.root")
-
-
-class ReadoutFlagsDropped(Plugin):
+class TTF4Occupancy(Plugin):
     def __init__(self, buildopener):
         Plugin.__init__(self, buildopener, folder="", plot_name="")
 
@@ -180,25 +156,30 @@ class ReadoutFlagsDropped(Plugin):
         run_dict = {"tower": [], "value": []}
 
         #EB
-        self.folder = "EcalBarrel/EBSelectiveReadoutTask/"
-        self.plot_name = "EBSRT FR Flagged Dropped Readout"
+        self.folder = "EcalBarrel/EBTriggerTowerTask/"
+        self.plot_name = "EBTTT TTF4 Occupancy"
         one_run_root_object = self.get_root_object(run_info)
         read_hist(one_run_root_object, "EB", df, supermodules_FED, run_dict)
         
         #EE-
-        self.folder = "EcalEndcap/EESelectiveReadoutTask/"
-        self.plot_name = "EESRT FR Flagged Dropped Readout EE -"
+        self.folder = "EcalEndcap/EETriggerTowerTask/"
+        self.plot_name = "EETTT TTF4 Occupancy EE -"
         one_run_root_object = self.get_root_object(run_info)
         read_hist(one_run_root_object, "EE-", df, supermodules_FED, run_dict)
 
         #EE+
-        self.folder = "EcalEndcap/EESelectiveReadoutTask/"
-        self.plot_name = "EESRT FR Flagged Dropped Readout EE +"
+        self.folder = "EcalEndcap/EETriggerTowerTask/"
+        self.plot_name = "EETTT TTF4 Occupancy EE +"
         one_run_root_object = self.get_root_object(run_info)
         read_hist(one_run_root_object, "EE+", df, supermodules_FED, run_dict)
 
+        #unique pairs of tower and value
+        unique_pairs = list(set(zip(run_dict["tower"], run_dict["value"])))
+        run_dict_unique = {"tower": [pair[0] for pair in unique_pairs], "value": [pair[1] for pair in unique_pairs]}
+        print(run_dict_unique)
+
         #fill _data inside generic Plugin class
-        self.fill_data_one_run(run_info, run_dict)
+        self.fill_data_one_run(run_info, run_dict_unique)
 
 
     #history plot function
@@ -212,33 +193,12 @@ class ReadoutFlagsDropped(Plugin):
             run_dict["run"] += [run for j in range(len(data_one_run["tower"]))]
         #from dict to dataframe
         run_df = pd.DataFrame(run_dict)
-        run_df[["detector", "sm_num", "tcc_num", "tt_ccu", "tt_num"]] = run_df["tower"].str.extract(r'(EB|EE)([+-]?\d+)\s+TCC(\d+)\s+(TT|CCU)(\d+)')
+        run_df[["detector", "sm_num", "tcc_num", "tt_num", "ccu_num"]] = run_df["tower"].str.extract(r'(EB|EE)([+-]?\d+)\s+TCC(\d+)\s+TT(\d+)\s+CCU(\d+)')
         run_df["sm_num"] = run_df["sm_num"].astype(int)
         run_df["tt_num"] = run_df["tt_num"].astype(int)
+        run_df["ccu_num"] = run_df["ccu_num"].astype(int)
         run_df["tcc_num"] = run_df["tcc_num"].astype(int)
         run_df["detector_priority"] = run_df["detector"].map({"EB": 0, "EE": 1})
-        run_df["tt_ccu_priority"] = run_df["tt_ccu"].map({"TT": 0, "CCU": 1})
-        run_df = run_df.sort_values(by=["detector_priority", "sm_num", "tcc_num", "tt_ccu_priority", "tt_num"]).drop(columns=["detector_priority",
-        "sm_num", "tcc_num", "tt_ccu_priority", "tt_num", "detector", "tt_ccu"])
-
-        #creating the initial histogram
-        tower_list = list(pd.unique(run_df.tower))
-        run_list = list(available_runs)
-        hist = ROOT.TH2F(f"ReadoutFlagsDropped", "", len(run_list), 0., len(run_list)+1, len(tower_list), 0., len(tower_list)+1)
-        run_df.apply(lambda row: df_to_hist(row, hist, tower_list, run_list), axis=1)
-
-        #filling the subhistograms
-        nbinsy = hist.GetNbinsY()
-        max_bins = 15
-        n_subhist = nbinsy // max_bins + (1 if nbinsy % max_bins > 0 else 0)
-        for i in range(n_subhist):
-            ybin_start = i * max_bins
-            ybin_end = min((i+1) * max_bins, nbinsy)
-            subhist = ROOT.TH2F(f"ReadoutFlagsDropped_part{i+1}", "", len(run_list), 0., len(run_list)+1, ybin_end-ybin_start, ybin_start, ybin_end+1)
-            for ix in range(len(run_list)):
-                for iy in range(ybin_end-ybin_start):
-                    subhist.SetBinContent(ix+1, iy+1, hist.GetBinContent(ix+1, ybin_start+iy+1))
-            if n_subhist == 1:
-                hist_config(run_list, tower_list, subhist, ybin_start, ybin_end, "ReadoutFlagsDropped", "/eos/user/d/delvecch/www/PFG/")
-            else:
-                hist_config(run_list, tower_list, subhist, ybin_start, ybin_end, f"ReadoutFlagsDropped_part{i+1}", "/eos/user/d/delvecch/www/PFG/")
+        run_df = run_df.sort_values(by=["detector_priority", "sm_num", "tcc_num", "tt_num", "ccu_num"]).drop(columns=["detector_priority",
+        "sm_num", "tcc_num", "tt_num", "ccu_num", "detector"])
+        print(run_df)

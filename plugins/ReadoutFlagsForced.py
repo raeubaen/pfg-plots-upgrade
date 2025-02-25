@@ -182,21 +182,18 @@ class ReadoutFlagsForced(Plugin):
         #barrel single run
         self.folder = "EcalBarrel/EBSelectiveReadoutTask/"
         self.plot_name = "EBSRT readout unit with SR forced"
-        self.serverurl_online = "online"
         one_run_root_object = self.get_root_object(run_info)
         read_hist(one_run_root_object, "EB", df, supermodules_FED, run_dict)
         
         #endcap- single run
         self.folder = "EcalEndcap/EESelectiveReadoutTask/"
         self.plot_name = "EESRT readout unit with SR forced EE -"
-        self.serverurl_online = "online"
         one_run_root_object = self.get_root_object(run_info)
         read_hist(one_run_root_object, "EE-", df, supermodules_FED, run_dict)
 
         #endcap+ single run
         self.folder = "EcalEndcap/EESelectiveReadoutTask/"
         self.plot_name = "EESRT readout unit with SR forced EE +"
-        self.serverurl_online = "online"
         one_run_root_object = self.get_root_object(run_info)
         read_hist(one_run_root_object, "EE+", df, supermodules_FED, run_dict)
 
