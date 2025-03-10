@@ -18,7 +18,7 @@ class Plugin:
 
     #take the json from the DQM and converting into a root object
     def get_root_object(self, run_info):
-        json_str = dqm_get_json(self.buildopener, run_info["run"], run_info["dataset"], self.folder, self.plot_name, self.serverurl_online)
+        json_str = dqm_get_json(self.buildopener, run_info["run"], run_info["dataset"], self.folder, self.plot_name)
         try:
             return ROOT.TBufferJSON.ConvertFromJSON(str(json_str))
         except cppyy.gbl.nlohmann.detail.out_of_range:

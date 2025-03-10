@@ -4,6 +4,7 @@ import json
 import pandas as pd
 
 from Plugin import Plugin
+import ECAL
 
 
 
@@ -11,7 +12,7 @@ def read_hist(one_run_root_object, labels, run_dict, supermodule):
     nbinsx = one_run_root_object.GetNbinsX()
     nbinsy = one_run_root_object.GetNbinsY()
     yproj = one_run_root_object.ProjectionY("yproj", 1, 1)
-    #loop on the TH2F histogram: iy -> labels, ix -> trigger tower
+    #loop on the TH2F histogram: iy -> status, ix -> trigger tower
     for iy in range(1, nbinsy+1):
         if labels[iy-1] == "ENABLED" or labels[iy-1] == "SUPPRESSED":
             continue
@@ -74,18 +75,15 @@ class FEStatusBits(Plugin):
         Plugin.__init__(self, buildopener, folder="", plot_name="")
 
         
-    #process single run, all the supermodules for both barrel and endcap
+    #process single run
     def process_one_run(self, run_info):
         #labels of the trigger towers bits
-        labels = ["ENABLED", "DISABLED", "TIMEOUT", "HEADERERROR", "CHANNELID", "LINKERROR", "BLOCKSIZE", "SUPPRESSED","FORCEDFULLSUPP",
-        "L1ADESYNC", "BXDESYNC", "L1ABXDESYNC", "FIFOFULL", "HPARITY", "VPARITY", "FORCEDZS"]        
+        labels = ECAL.FEstatus_labels        
         #dictionary with single run status info
         run_dict = {"tower": [], "status": [], "value": []}
         
         #barrel supermodules
-        EBsupermodules_list = ["EB-18", "EB-17", "EB-16", "EB-15", "EB-14", "EB-13", "EB-12", "EB-11", "EB-10", "EB-09", "EB-08",
-        "EB-07", "EB-06", "EB-05", "EB-04", "EB-03", "EB-02", "EB-01", "EB+01", "EB+02", "EB+03", "EB+04", "EB+05", "EB+06", "EB+07",
-        "EB+08", "EB+09", "EB+10", "EB+11", "EB+12", "EB+13", "EB+14", "EB+15", "EB+16", "EB+17", "EB+18"]
+        EBsupermodules_list = ECAL.EBsupermodules_list
         #loop on barrel supermodules
         for i, EBsupermodule in enumerate(EBsupermodules_list):
             self.folder = "EcalBarrel/EBStatusFlagsTask/FEStatus/"
@@ -94,7 +92,7 @@ class FEStatusBits(Plugin):
             read_hist(one_run_root_object, labels, run_dict, EBsupermodule)
                         
         #endcap supermodules
-        EEsupermodules_list = ["EE-09", "EE-08", "EE-07", "EE-06", "EE-05", "EE-04", "EE-03", "EE-02", "EE-01", "EE+01", "EE+02", "EE+03", "EE+04", "EE+05", "EE+06", "EE+07", "EE+08", "EE+09"]
+        EEsupermodules_list = ECAL.EEsupermodules_list
         #loop on endcap supermodules
         for i, EEsupermodule in enumerate(EEsupermodules_list):
             self.folder = "EcalEndcap/EEStatusFlagsTask/FEStatus/"

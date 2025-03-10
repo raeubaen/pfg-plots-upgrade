@@ -4,6 +4,11 @@ import json
 import pandas as pd
 
 from Plugin import Plugin
+import ECAL
+
+LOW_LIMIT = 100
+UP_LIMIT = 300
+MIN_VALUE = 5
 
 
 
@@ -12,7 +17,7 @@ def read_hist(one_run_root_object, run_dict, supermodule):
     nbinsy = one_run_root_object.GetNbinsY()
     for iy in range(1, nbinsy+1):
         for ix in range(1, nbinsx+1):
-            if (one_run_root_object.GetBinContent(ix, iy) < 100 and one_run_root_object.GetBinContent(ix, iy) > 5) or one_run_root_object.GetBinContent(ix, iy) > 300:
+            if (one_run_root_object.GetBinContent(ix, iy) < LOW_LIMIT and one_run_root_object.GetBinContent(ix, iy) > MIN_VALUE) or one_run_root_object.GetBinContent(ix, iy) > UP_LIMIT:
                 if "EB-" in supermodule: #y -> iphi, x -> ieta
                     x = int(one_run_root_object.GetXaxis().GetBinUpEdge(ix))
                     y = int(one_run_root_object.GetYaxis().GetBinUpEdge(iy))
@@ -86,9 +91,7 @@ class MeanChannels(Plugin):
         run_dict = {"SM_ch": [], "value": []}
 
         #barrel supermodules
-        EBsupermodules_list = ["EB-18", "EB-17", "EB-16", "EB-15", "EB-14", "EB-13", "EB-12", "EB-11", "EB-10", "EB-09",
-        "EB-08", "EB-07", "EB-06", "EB-05", "EB-04", "EB-03", "EB-02", "EB-01", "EB+01", "EB+02", "EB+03", "EB+04", "EB+05",
-        "EB+06", "EB+07", "EB+08", "EB+09", "EB+10", "EB+11", "EB+12", "EB+13", "EB+14", "EB+15", "EB+16", "EB+17", "EB+18"]
+        EBsupermodules_list = ECAL.EBsupermodules_list
         #loop on barrel supermodules
         for i, EBsupermodule in enumerate(EBsupermodules_list):
             self.folder = "EcalBarrel/EBPedestalOnlineTask/Gain12/"
@@ -97,8 +100,7 @@ class MeanChannels(Plugin):
             read_hist(one_run_root_object, run_dict, EBsupermodule)
 
         #endcap supermodules
-        EEsupermodules_list = ["EE-09", "EE-08", "EE-07", "EE-06", "EE-05", "EE-04", "EE-03", "EE-02", "EE-01", "EE+01",
-        "EE+02", "EE+03", "EE+04", "EE+05", "EE+06", "EE+07", "EE+08", "EE+09"]
+        EEsupermodules_list = ECAL.EEsupermodules_list
         #loop on endcap supermodules
         for i, EEsupermodule in enumerate(EEsupermodules_list):
             self.folder = "EcalEndcap/EEPedestalOnlineTask/Gain12/"

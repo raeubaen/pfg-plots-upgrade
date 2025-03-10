@@ -45,7 +45,7 @@ def x509_params():
     return key_file, cert_file
 
 
-def dqm_get_json(buildopener, run, dataset, folder, plotname, serverurl_online):
+def dqm_get_json(buildopener, run, dataset, folder, plotname):
     if dataset != "/Global/Online/ALL/":
         print(f"Error in dataset of run {run}, it should be: /Global/Online/ALL/\nControl the runlist file in input")
         print("Exiting from the execution of the program")

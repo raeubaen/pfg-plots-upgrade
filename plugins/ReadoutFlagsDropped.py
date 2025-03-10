@@ -4,6 +4,7 @@ import json
 import pandas as pd
 
 from Plugin import Plugin
+import ECAL
 
 
 
@@ -18,10 +19,8 @@ def read_hist(one_run_root_object, detector, df, supermodules_FED, run_dict):
                     y = one_run_root_object.GetYaxis().GetBinLowEdge(iy)
                     df_phi = df[df["iphi"] == x+1] #+1 because the low edge belongs to the previous SM
                     df_phi_eta = df_phi[df_phi["ieta"] == y+1] #+1 because the low edge belongs to the previous SM
-                    EB_SM = next((key for key, fe in supermodules_FED.items() if fe == df_phi_eta["fed"].iloc[0]), None)
-                    tt = df_phi_eta["tower"].iloc[0]
-                    tcc = df_phi_eta["tcc"].iloc[0]
-                    run_dict["tower"].append(f"{EB_SM} TCC{tcc} TT{tt}")
+                    info_dict = ECAL.fill_tcc_tt(df_phi_eta, supermodules_FED)
+                    run_dict["tower"].append(f"{info_dict['SM_label']} TCC{info_dict['tcc']} TT{info_dict['tt']}")
                     run_dict["value"].append(one_run_root_object.GetBinContent(ix, iy))
     if detector == "EE-":
         for iy in range(1, nbinsy+1):
@@ -33,10 +32,8 @@ def read_hist(one_run_root_object, detector, df, supermodules_FED, run_dict):
                     df_x_y = df_x[df_x["iy"] == y]
                     if not df_x_y.empty:
                         df_x_y_m = df_x_y[df_x_y["fed"] <= 609] #choose the EE- fed
-                        EEm_SM = next((key for key, fe in supermodules_FED.items() if fe == df_x_y_m["fed"].iloc[0]), None)
-                        ccu = df_x_y_m["ccu"].iloc[0]
-                        tcc = df_x_y_m["tcc"].iloc[0]
-                        run_dict["tower"].append(f"{EEm_SM} TCC{tcc} CCU{ccu}")
+                        info_dict = ECAL.fill_tcc_tt(df_x_y_m, supermodules_FED)
+                        run_dict["tower"].append(f"{info_dict['SM_label']} TCC{info_dict['tcc']} CCU{info_dict['tt']}")
                         run_dict["value"].append(one_run_root_object.GetBinContent(ix, iy))
                     else:
                         y = one_run_root_object.GetYaxis().GetBinLowEdge(iy)
@@ -44,10 +41,8 @@ def read_hist(one_run_root_object, detector, df, supermodules_FED, run_dict):
                         df_x_y = df_x[df_x["iy"] == y+1]
                         if not df_x_y.empty:
                             df_x_y_m = df_x_y[df_x_y["fed"] <= 609] #choose the EE- fed
-                            EEm_SM = next((key for key, fe in supermodules_FED.items() if fe == df_x_y_m["fed"].iloc[0]), None)
-                            ccu = df_x_y_m["ccu"].iloc[0]
-                            tcc = df_x_y_m["tcc"].iloc[0]
-                            run_dict["tower"].append(f"{EEm_SM} TCC{tcc} CCU{ccu}")
+                            info_dict = ECAL.fill_tcc_tt(df_x_y_m, supermodules_FED)
+                            run_dict["tower"].append(f"{info_dict['SM_label']} TCC{info_dict['tcc']} CCU{info_dict['tt']}")
                             run_dict["value"].append(one_run_root_object.GetBinContent(ix, iy))
                         else:
                             x = one_run_root_object.GetXaxis().GetBinLowEdge(ix)
@@ -55,20 +50,16 @@ def read_hist(one_run_root_object, detector, df, supermodules_FED, run_dict):
                             df_x_y = df_x[df_x["iy"] == y+1]
                             if not df_x_y.empty:
                                 df_x_y_m = df_x_y[df_x_y["fed"] <= 609] #choose the EE- fed
-                                EEm_SM = next((key for key, fe in supermodules_FED.items() if fe == df_x_y_m["fed"].iloc[0]), None)
-                                ccu = df_x_y_m["ccu"].iloc[0]
-                                tcc = df_x_y_m["tcc"].iloc[0]
-                                run_dict["tower"].append(f"{EEm_SM} TCC{tcc} CCU{ccu}")
+                                info_dict = ECAL.fill_tcc_tt(df_x_y_m, supermodules_FED)
+                                run_dict["tower"].append(f"{info_dict['SM_label']} TCC{info_dict['tcc']} CCU{info_dict['tt']}")
                                 run_dict["value"].append(one_run_root_object.GetBinContent(ix, iy))
                             else:
                                 y = one_run_root_object.GetYaxis().GetBinUpEdge(iy)
                                 df_x = df[df["ix"] == x+1]
                                 df_x_y = df_x[df_x["iy"] == y]
                                 df_x_y_m = df_x_y[df_x_y["fed"] <= 609] #choose the EE- fed
-                                EEm_SM = next((key for key, fe in supermodules_FED.items() if fe == df_x_y_m["fed"].iloc[0]), None)
-                                ccu = df_x_y_m["ccu"].iloc[0]
-                                tcc = df_x_y_m["tcc"].iloc[0]
-                                run_dict["tower"].append(f"{EEm_SM} TCC{tcc} CCU{ccu}")
+                                info_dict = ECAL.fill_tcc_tt(df_x_y_m, supermodules_FED)
+                                run_dict["tower"].append(f"{info_dict['SM_label']} TCC{info_dict['tcc']} CCU{info_dict['tt']}")
                                 run_dict["value"].append(one_run_root_object.GetBinContent(ix, iy))
     if detector == "EE+":
         for iy in range(1, nbinsy+1):
@@ -80,10 +71,8 @@ def read_hist(one_run_root_object, detector, df, supermodules_FED, run_dict):
                     df_x_y = df_x[df_x["iy"] == y]
                     if not df_x_y.empty:
                         df_x_y_p = df_x_y[df_x_y["fed"] >= 646] #choose the EE+ fed
-                        EEp_SM = next((key for key, fe in supermodules_FED.items() if fe == df_x_y_p["fed"].iloc[0]), None)
-                        ccu = df_x_y_p["ccu"].iloc[0]
-                        tcc = df_x_y_p["tcc"].iloc[0]
-                        run_dict["tower"].append(f"{EEp_SM} TCC{tcc} CCU{ccu}")
+                        info_dict = ECAL.fill_tcc_tt(df_x_y_p, supermodules_FED)
+                        run_dict["tower"].append(f"{info_dict['SM_label']} TCC{info_dict['tcc']} CCU{info_dict['tt']}")
                         run_dict["value"].append(one_run_root_object.GetBinContent(ix, iy))
                     else:
                         y = one_run_root_object.GetYaxis().GetBinLowEdge(iy)
@@ -91,10 +80,8 @@ def read_hist(one_run_root_object, detector, df, supermodules_FED, run_dict):
                         df_x_y = df_x[df_x["iy"] == y+1]
                         if not df_x_y.empty:
                             df_x_y_p = df_x_y[df_x_y["fed"] >= 646] #choose the EE+ fed
-                            EEp_SM = next((key for key, fe in supermodules_FED.items() if fe == df_x_y_p["fed"].iloc[0]), None)
-                            ccu = df_x_y_p["ccu"].iloc[0]
-                            tcc = df_x_y_p["tcc"].iloc[0]
-                            run_dict["tower"].append(f"{EEp_SM} TCC{tcc} CCU{ccu}")
+                            info_dict = ECAL.fill_tcc_tt(df_x_y_p, supermodules_FED)
+                            run_dict["tower"].append(f"{info_dict['SM_label']} TCC{info_dict['tcc']} CCU{info_dict['tt']}")
                             run_dict["value"].append(one_run_root_object.GetBinContent(ix, iy))
                         else:
                             x = one_run_root_object.GetXaxis().GetBinLowEdge(ix)
@@ -102,20 +89,16 @@ def read_hist(one_run_root_object, detector, df, supermodules_FED, run_dict):
                             df_x_y = df_x[df_x["iy"] == y+1]
                             if not df_x_y.empty:
                                 df_x_y_p = df_x_y[df_x_y["fed"] >= 646] #choose the EE+ fed
-                                EEp_SM = next((key for key, fe in supermodules_FED.items() if fe == df_x_y_p["fed"].iloc[0]), None)
-                                ccu = df_x_y_p["ccu"].iloc[0]
-                                tcc = df_x_y_p["tcc"].iloc[0]
-                                run_dict["tower"].append(f"{EEp_SM} TCC{tcc} CCU{ccu}")
+                                info_dict = ECAL.fill_tcc_tt(df_x_y_p, supermodules_FED)
+                                run_dict["tower"].append(f"{info_dict['SM_label']} TCC{info_dict['tcc']} CCU{info_dict['tt']}")
                                 run_dict["value"].append(one_run_root_object.GetBinContent(ix, iy))
                             else:
                                 y = one_run_root_object.GetYaxis().GetBinUpEdge(iy)
                                 df_x = df[df["ix"] == x+1]
                                 df_x_y = df_x[df_x["iy"] == y]
                                 df_x_y_p = df_x_y[df_x_y["fed"] >= 646] #choose the EE+ fed
-                                EEp_SM = next((key for key, fe in supermodules_FED.items() if fe == df_x_y_p["fed"].iloc[0]), None)
-                                ccu = df_x_y_p["ccu"].iloc[0]
-                                tcc = df_x_y_p["tcc"].iloc[0]
-                                run_dict["tower"].append(f"{EEp_SM} TCC{tcc} CCU{ccu}")
+                                info_dict = ECAL.fill_tcc_tt(df_x_y_p, supermodules_FED)
+                                run_dict["tower"].append(f"{info_dict['SM_label']} TCC{info_dict['tcc']} CCU{info_dict['tt']}")
                                 run_dict["value"].append(one_run_root_object.GetBinContent(ix, iy))
 
 
@@ -165,17 +148,12 @@ class ReadoutFlagsDropped(Plugin):
         Plugin.__init__(self, buildopener, folder="", plot_name="")
 
 
-    #process single run, for both barrel and endcap
+    #process single run
     def process_one_run(self, run_info):
-        #dataframe with relative SM, TT and (eta, phi) for channels
+        #load the dataframe with relative SM, TT and (eta, phi) for channels
         df = pd.read_csv("/eos/user/d/delvecch/www/PFG/ecalchannels.csv")
-        #dictionary for match between the SM and FE
-        supermodules_FED = {"EB-18": 627, "EB-17": 626, "EB-16": 625, "EB-15": 624, "EB-14": 623, "EB-13": 622, "EB-12": 621, "EB-11": 620,
-        "EB-10": 619, "EB-09": 618, "EB-08": 617, "EB-07": 616, "EB-06": 615, "EB-05": 614, "EB-04": 613, "EB-03": 612, "EB-02": 611,
-        "EB-01": 610, "EB+01": 628, "EB+02": 629, "EB+03": 630, "EB+04": 631, "EB+05": 632, "EB+06": 633, "EB+07": 634, "EB+08": 635,
-        "EB+09": 636, "EB+10": 637, "EB+11": 638, "EB+12": 639, "EB+13": 640, "EB+14": 641, "EB+15": 642, "EB+16": 643, "EB+17": 644,
-        "EB+18": 645, "EE-09": 603, "EE-08": 602, "EE-07": 601, "EE-06": 609, "EE-05": 608, "EE-04": 607, "EE-03": 606, "EE-02": 605, 
-        "EE-01": 604, "EE+01": 649, "EE+02": 650, "EE+03": 651, "EE+04": 652, "EE+05": 653, "EE+06": 654, "EE+07": 646, "EE+08": 647, "EE+09": 648}
+        #dictionary for matching between the SM and FE
+        supermodules_FED = ECAL.supermodules_FED_match
         #dictionary with single run info
         run_dict = {"tower": [], "value": []}
 

@@ -6,6 +6,7 @@ import numpy as np
 
 from Plugin import Plugin
 from EELightMonitoringRegions import EELightMR
+import ECAL
 
 
 
@@ -87,6 +88,11 @@ def dividebymedian_EE(EEchannels):
 
 
 def check_common_channels(run_dict_temp):
+    runs_to_remove = [run for run, data in run_dict_temp.items() if all(abs(val) == 0 for val in data["value"])]
+    for run in runs_to_remove:
+        del run_dict_temp[run]
+    if not run_dict_temp:
+        return
     common_channels = set(run_dict_temp[next(iter(run_dict_temp))]["SM_ch"])
     for run_data in run_dict_temp.values():
         common_channels &= set(run_data["SM_ch"])
@@ -99,15 +105,17 @@ def check_common_channels(run_dict_temp):
                 filtered_value.append(val)
         data["SM_ch"] = filtered_SM_ch
         data["value"] = filtered_value
+    return run_dict_temp.keys()
 
 
 def getBadXY(available_runs, run_dict_temp, run_dict):
     channels_array = np.array([run_dict_temp[run]["SM_ch"] for run in available_runs])
     values_array = np.array([run_dict_temp[run]["value"] for run in available_runs])
-    fully_zero_cols = np.any(abs(values_array) == 0, axis=0)
-    mask_keep = ~fully_zero_cols
-    channels_filtered = channels_array[:, mask_keep]
-    values_filtered = values_array[:, mask_keep]
+    values_array[values_array == -0] = 0
+    zero_cols = np.any(abs(values_array) == 0, axis=0)
+    mask_keep_cols = ~zero_cols
+    channels_filtered = channels_array[:, mask_keep_cols]
+    values_filtered = values_array[:, mask_keep_cols]
     medians_over_runs = np.median(values_filtered, axis=0)
     MEDIANUP_EB = 1.15
     MEDIANLOW_EB = 0.85
@@ -153,7 +161,7 @@ def hist_config(run_list, tower_list, hist, ybin_start, ybin_end, name, eos_site
     ROOT.gStyle.SetLineColor(ROOT.kGray+1)
     ROOT.gStyle.SetLineStyle(3)
     canva.SetLeftMargin(0.18)
-    canva.SetRightMargin(0.12)
+    canva.SetRightMargin(0.15)
     canva.SetTopMargin(0.05)
     canva.SetBottomMargin(0.15)
     #hist settings
@@ -187,9 +195,7 @@ class Laser3Amplitude(Plugin):
         run_dict = {"SM_ch": [], "value":[]}
 
         #barrel supermodules
-        EBsupermodules_list = ["EB-18", "EB-17", "EB-16", "EB-15", "EB-14", "EB-13", "EB-12", "EB-11", "EB-10", "EB-09",
-        "EB-08", "EB-07", "EB-06", "EB-05", "EB-04", "EB-03", "EB-02", "EB-01", "EB+01", "EB+02", "EB+03", "EB+04", "EB+05",
-        "EB+06", "EB+07", "EB+08", "EB+09", "EB+10", "EB+11", "EB+12", "EB+13", "EB+14", "EB+15", "EB+16", "EB+17", "EB+18"]
+        EBsupermodules_list = ECAL.EBsupermodules_list
         #loop on barrel supermodules
         for i, EBsupermodule in enumerate(EBsupermodules_list):
             self.folder = "EcalBarrel/EBLaserTask/Laser3/"
@@ -203,8 +209,7 @@ class Laser3Amplitude(Plugin):
             run_dict["value"].extend(Ichannels["value"] + Lchannels["value"])
         
         #endcap supermodules
-        EEsupermodules_list = ["EE-09", "EE-08", "EE-07", "EE-06", "EE-05", "EE-04", "EE-03", "EE-02", "EE-01", "EE+01",
-        "EE+02", "EE+03", "EE+04", "EE+05", "EE+06", "EE+07", "EE+08", "EE+09"]
+        EEsupermodules_list = ECAL.EEsupermodules_list
         #loop on endcap supermodules
         for i, EEsupermodule in enumerate(EEsupermodules_list):
             self.folder = "EcalEndcap/EELaserTask/Laser3/"
@@ -227,9 +232,9 @@ class Laser3Amplitude(Plugin):
         for i, run in enumerate(available_runs):
             data_one_run = self.get_data_one_run(run)
             run_dict_temp[run] = data_one_run
-        check_common_channels(run_dict_temp)
+        available_runs_filtered = check_common_channels(run_dict_temp)
         run_dict = {"SM_ch": [], "value": [], "run": []}
-        getBadXY(available_runs, run_dict_temp, run_dict)
+        getBadXY(available_runs_filtered, run_dict_temp, run_dict)
 
         #from dict to dataframe + ordering
         run_df = pd.DataFrame(run_dict)
@@ -243,7 +248,7 @@ class Laser3Amplitude(Plugin):
 
         #EB plot
         tower_list = list(pd.unique(df_EB.SM_ch))
-        run_list = list(available_runs)
+        run_list = list(available_runs_filtered)
         hist = ROOT.TH2F(f"Laser3Amplitude_EB", "", len(run_list), 0., len(run_list)+1, len(tower_list), 0., len(tower_list)+1)
         df_EB.apply(lambda row: df_to_hist(row, hist, tower_list, run_list), axis=1)
         #filling the subhistograms
@@ -264,7 +269,7 @@ class Laser3Amplitude(Plugin):
 
         #EE plot
         tower_list = list(pd.unique(df_EE.SM_ch))
-        run_list = list(available_runs)
+        run_list = list(available_runs_filtered)
         hist = ROOT.TH2F(f"Laser3Amplitude_EE", "", len(run_list), 0., len(run_list)+1, len(tower_list), 0., len(tower_list)+1)
         df_EE.apply(lambda row: df_to_hist(row, hist, tower_list, run_list), axis=1)
         #filling the subhistograms

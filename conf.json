@@ -1,2 +1,2 @@
-{"Plugins": ["Timing", "FEStatusBits", "ReadoutFlagsDropped", "ReadoutFlagsForced", "MeanChannels", "Laser3Amplitude"]}
+{"Plugins": ["Timing", "FEStatusBits", "ReadoutFlagsDropped", "ReadoutFlagsForced", "MeanChannels", "Laser3Amplitude", "TTF4Occupancy"]}
 
