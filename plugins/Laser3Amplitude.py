@@ -190,7 +190,7 @@ class Laser3Amplitude(Plugin):
         Plugin.__init__(self, buildopener, folder="", plot_name="")
 
 
-    #process single run, for both barrel and endcap
+    #process single run
     def process_one_run(self, run_info):
         run_dict = {"SM_ch": [], "value":[]}
 

@@ -24,8 +24,10 @@ supermodules_FED_match = {"EB-18": 627, "EB-17": 626, "EB-16": 625, "EB-15": 624
         "EE-01": 604, "EE+01": 649, "EE+02": 650, "EE+03": 651, "EE+04": 652, "EE+05": 653, "EE+06": 654, "EE+07": 646, "EE+08": 647, "EE+09": 648}
 
 
-def fill_tcc_tt(df_xphi_yeta, supermodules_FED):
+def fill_tcc_tt(df_xphi_yeta, supermodules_FED, key=0):
         SM_label = next((key for key, fe in supermodules_FED.items() if fe == df_xphi_yeta["fed"].iloc[0]), None)
         tt = df_xphi_yeta["tower"].iloc[0]
+        if key == 1:
+                tt = df_xphi_yeta["ccu"].iloc[0]
         tcc = df_xphi_yeta["tcc"].iloc[0]
-        return {"SM_label": SM_label, "tt": tt, "tcc": tcc}
+        return {"SM_label": SM_label, "tt_ccu": tt, "tcc": tcc}

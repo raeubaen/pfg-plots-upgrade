@@ -21,7 +21,7 @@ def read_hist(one_run_root_object, detector, df, supermodules_FED, run_dict):
                     df_phi = df[df["iphi"] == x+1] #+1 because the low edge belongs to the previous SM
                     df_phi_eta = df_phi[df_phi["ieta"] == y+1] #+1 because the low edge belongs to the previous SM
                     info_dict = ECAL.fill_tcc_tt(df_phi_eta, supermodules_FED)
-                    run_dict["tower"].append(f"{info_dict['SM_label']} TCC{info_dict['tcc']} TT{info_dict['tt']}")
+                    run_dict["tower"].append(f"{info_dict['SM_label']} TCC{info_dict['tcc']} TT{info_dict['tt_ccu']}")
                     run_dict["value"].append(one_run_root_object.GetBinContent(ix, iy))
     if detector == "EE-":
         for iy in range(1, nbinsy+1):
@@ -34,7 +34,7 @@ def read_hist(one_run_root_object, detector, df, supermodules_FED, run_dict):
                     if not df_x_y.empty:
                         df_x_y_m = df_x_y[df_x_y["fed"] <= 609] #choose the EE- fed
                         info_dict = ECAL.fill_tcc_tt(df_x_y_m, supermodules_FED)
-                        run_dict["tower"].append(f"{info_dict['SM_label']} TCC{info_dict['tcc']} TT{info_dict['tt']}")
+                        run_dict["tower"].append(f"{info_dict['SM_label']} TCC{info_dict['tcc']} TT{info_dict['tt_ccu']}")
                         run_dict["value"].append(one_run_root_object.GetBinContent(ix, iy))
     if detector == "EE+":
         for iy in range(1, nbinsy+1):
@@ -47,7 +47,7 @@ def read_hist(one_run_root_object, detector, df, supermodules_FED, run_dict):
                     if not df_x_y.empty:
                         df_x_y_p = df_x_y[df_x_y["fed"] >= 646] #choose the EE+ fed
                         info_dict = ECAL.fill_tcc_tt(df_x_y_p, supermodules_FED)
-                        run_dict["tower"].append(f"{info_dict['SM_label']} TCC{info_dict['tcc']} TT{info_dict['tt']}")
+                        run_dict["tower"].append(f"{info_dict['SM_label']} TCC{info_dict['tcc']} TT{info_dict['tt_ccu']}")
                         run_dict["value"].append(one_run_root_object.GetBinContent(ix, iy))
 
 
@@ -130,7 +130,7 @@ class TTF4Occupancy(Plugin):
         Plugin.__init__(self, buildopener, folder="", plot_name="")
 
 
-    #process single run, for both barrel and endcap
+    #process single run
     def process_one_run(self, run_info):
         #dataframe with relative SM, TT and (eta, phi) for channels
         df = pd.read_csv("/eos/user/d/delvecch/www/PFG/ecalchannels.csv")
