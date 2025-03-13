@@ -38,7 +38,7 @@ def read_hist(one_run_root_object, run_number, fit_result, detector):
     """
 
 
-def hist_config(graph, available_runs, detector, eos_site):
+def hist_config(graph, available_runs, detector, save_path):
     #canva settings
     c = ROOT.TCanvas(f"c_{detector}", "", 5120, 2880)
     c.SetGrid()
@@ -73,9 +73,9 @@ def hist_config(graph, available_runs, detector, eos_site):
     #saving
     c.Modified()
     c.Update()
-    c.SaveAs(f"{eos_site}Timing_mean_{detector}.pdf")
-    c.SaveAs(f"{eos_site}Timing_mean_{detector}.png")
-    c.SaveAs(f"{eos_site}Timing_mean_{detector}.root")
+    c.SaveAs(f"{save_path}Timing_mean_{detector}.pdf")
+    c.SaveAs(f"{save_path}Timing_mean_{detector}.png")
+    c.SaveAs(f"{save_path}Timing_mean_{detector}.root")
 
 
 class Timing(Plugin):
@@ -112,7 +112,7 @@ class Timing(Plugin):
         
     
     #history plot function
-    def create_history_plots(self):
+    def create_history_plots(self, save_path):
         ROOT.gROOT.LoadMacro("rootlogon1.C")
         graph_EB = ROOT.TGraphErrors()
         graph_EEm = ROOT.TGraphErrors()
@@ -126,6 +126,6 @@ class Timing(Plugin):
             graph_EEm.SetPointError(i, 0, one_run_data["EE-"]["mean_error"])
             graph_EEp.SetPoint(i, i, one_run_data["EE+"]["mean"])
             graph_EEp.SetPointError(i, 0, one_run_data["EE+"]["mean_error"])
-        hist_config(graph_EB, available_runs, "EB", "/eos/user/d/delvecch/www/PFG/")
-        hist_config(graph_EEm, available_runs, "EEm", "/eos/user/d/delvecch/www/PFG/")
-        hist_config(graph_EEp, available_runs, "EEp", "/eos/user/d/delvecch/www/PFG/")
+        hist_config(graph_EB, available_runs, "EB", f"{save_path}")
+        hist_config(graph_EEm, available_runs, "EEm", f"{save_path}")
+        hist_config(graph_EEp, available_runs, "EEp", f"{save_path}")
