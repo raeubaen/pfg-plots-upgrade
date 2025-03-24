@@ -206,6 +206,6 @@ class Laser3Amplitude(Plugin):
         df_EE = run_df.loc[run_df["label"].str.contains("EE", case=False)]
 
         #fillingEB history plot
-        self.fill_history_subplots(df_EB, available_runs, "L3Amp_EB_gt_medianx{MEDIANUP_EB}_lt_medianx{MEDIANLOW_EB}", f"{save_path}", change_hist_limits=True)
+        self.fill_history_subplots(df_EB, available_runs, f"L3Amp_EB_gt_medianx{MEDIANUP_EB}_lt_medianx{MEDIANLOW_EB}", f"{save_path}", change_hist_limits=True)
         #filling EE history plot
-        self.fill_history_subplots(df_EE, available_runs, "L3Amp_EE_gt_medianx{MEDIANUP_EE}_lt_medianx{MEDIANLOW_EE}", f"{save_path}", change_hist_limits=True)
+        self.fill_history_subplots(df_EE, available_runs, f"L3Amp_EE_gt_medianx{MEDIANUP_EE}_lt_medianx{MEDIANLOW_EE}", f"{save_path}", change_hist_limits=True)
