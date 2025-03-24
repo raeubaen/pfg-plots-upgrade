@@ -57,9 +57,11 @@ def hist_config(graph, available_runs, detector, save_path):
     #modify the y_axis
     y_axis = graph.GetYaxis()
     y_axis.SetTitle("mean [ns]")
-    y_axis.SetLimits(-3, 3)
-    graph.SetMinimum(-3)
-    graph.SetMaximum(3)
+    miny = ROOT.TMath.MinElement(graph.GetN(),graph.GetY())
+    maxy = ROOT.TMath.MaxElement(graph.GetN(),graph.GetY())
+    y_axis.SetLimits(miny-0.5, maxy+0.5)
+    graph.SetMinimum(miny-0.5)
+    graph.SetMaximum(maxy+0.5)
     y_axis.SetTitleOffset(0.7)
     #saving
     c.Modified()

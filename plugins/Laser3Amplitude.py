@@ -8,6 +8,12 @@ from Plugin import Plugin
 import ECAL
 
 
+MEDIANUP_EB = 2
+MEDIANLOW_EB = 0.1
+MEDIANUP_EE = 3
+MEDIANLOW_EE = 0.003
+
+
 def read_hist_EB(one_run_root_object, supermodule, Ichannels, Lchannels):
     nbinsx = one_run_root_object.GetNbinsX()
     nbinsy = one_run_root_object.GetNbinsY()
@@ -118,10 +124,6 @@ def getBadXY(available_runs, run_dict_temp, run_dict):
     mask_keep_cols = ~zero_cols
     channels_filtered = channels_array[:, mask_keep_cols]
     values_filtered = values_array[:, mask_keep_cols]
-    MEDIANUP_EB = 2
-    MEDIANLOW_EB = 0.1
-    MEDIANUP_EE = 3
-    MEDIANLOW_EE = 0.003
     num_channels = values_filtered.shape[1]
     for i in range(num_channels):
         values_column = values_filtered[:, i]
