@@ -27,15 +27,6 @@ def read_hist(one_run_root_object, run_number, fit_result, detector):
     mean = gauss.GetParameter(1)
     mean_err = gauss.GetParError(1)
     fit_result[f"{detector}"] = {"mean": mean, "mean_error": mean_err}
-    """
-    #plot of the histogram with the fitting function
-    c = ROOT.TCanvas("c", "", 800, 600)
-    c.cd()
-    one_run_root_object.Draw()
-    gauss.SetLineColor(ROOT.kRed)
-    gauss.Draw("SAME")
-    c.SaveAs(f"/eos/user/d/delvecch/www/PFG/timing_{detector}_run{run_number}.pdf")
-    """
 
 
 def hist_config(graph, available_runs, detector, save_path):

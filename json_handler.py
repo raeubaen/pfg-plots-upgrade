@@ -56,6 +56,7 @@ def dqm_get_json(buildopener, run, dataset, folder, plotname):
     path = path.replace("//", "/")
     url = f"{serverurl}/{path}"
 
+    print(f"Reading: {url}")
     datareq = urllib.request.Request(url)
     datareq.add_header('User-agent', ident)
 

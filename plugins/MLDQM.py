@@ -186,7 +186,7 @@ class MLDQM(Plugin):
 
     def process_one_run(self, run_info):
         #load the file with all the info about the ECAL channels
-        channels_df = pd.read_csv("/eos/user/d/delvecch/www/PFG/ecalchannels.csv")
+        channels_df = pd.read_csv(self.ecal_channels_csv_path)
         #info for matching the SM with fed number
         supermodules_FED = ECAL.supermodules_FED_match
         #dictionary with single run status map

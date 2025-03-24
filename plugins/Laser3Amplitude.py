@@ -8,7 +8,6 @@ from Plugin import Plugin
 import ECAL
 
 
-
 def read_hist_EB(one_run_root_object, supermodule, Ichannels, Lchannels):
     nbinsx = one_run_root_object.GetNbinsX()
     nbinsy = one_run_root_object.GetNbinsY()
@@ -119,33 +118,30 @@ def getBadXY(available_runs, run_dict_temp, run_dict):
     mask_keep_cols = ~zero_cols
     channels_filtered = channels_array[:, mask_keep_cols]
     values_filtered = values_array[:, mask_keep_cols]
-    medians_over_runs = np.median(values_filtered, axis=0)
-    MEDIANUP_EB = 1.15
-    MEDIANLOW_EB = 0.85
-    MEDIANUP_EE = 1.30
-    MEDIANLOW_EE = 0.70
+    MEDIANUP_EB = 2
+    MEDIANLOW_EB = 0.1
+    MEDIANUP_EE = 3
+    MEDIANLOW_EE = 0.003
     num_channels = values_filtered.shape[1]
     for i in range(num_channels):
         values_column = values_filtered[:, i]
         channels = channels_filtered[:, i]
-        median = medians_over_runs[i]
         for j, run in enumerate(available_runs):
             if "EB" in channels[0]:
-                lower_bound = median * MEDIANLOW_EB
-                upper_bound = median * MEDIANUP_EB
-                if values_column[j] < lower_bound or values_column[j] > upper_bound:
+                #if "EB+10" in channels[0]: print("ch: ", channels, "values: ", values_column)
+                if values_column[j] < MEDIANLOW_EB or values_column[j] > MEDIANUP_EB:
                     run_dict["label"].extend(channels.tolist())
                     run_dict["value"].extend(values_column.tolist())
                     run_dict["run"].extend(list(available_runs))
                     break
             elif "EE" in channels[0]:
-                lower_bound = median * MEDIANLOW_EE
-                upper_bound = median * MEDIANUP_EE
-                if values_column[j] < lower_bound or values_column[j] > upper_bound:
+                if values_column[j] < MEDIANLOW_EE or values_column[j] > MEDIANUP_EE:
                     run_dict["label"].extend(channels.tolist())
                     run_dict["value"].extend(values_column.tolist())
                     run_dict["run"].extend(list(available_runs))
                     break
+    print("finished filtering laser channels")
+
 
 class Laser3Amplitude(Plugin):
     def __init__(self, buildopener):
@@ -183,7 +179,6 @@ class Laser3Amplitude(Plugin):
         #fill _data inside generic Plugin class
         self.fill_data_one_run(run_info, run_dict)
 
-    
     def create_history_plots(self, save_path):
         self.color_scale_settings(255)
         available_runs = self.get_available_runs()
@@ -211,6 +206,6 @@ class Laser3Amplitude(Plugin):
         df_EE = run_df.loc[run_df["label"].str.contains("EE", case=False)]
 
         #fillingEB history plot
-        self.fill_history_subplots(df_EB, available_runs, "Laser3Amplitude_EB", f"{save_path}", change_hist_limits=True)
+        self.fill_history_subplots(df_EB, available_runs, "L3Amp_EB_gt_medianx{MEDIANUP_EB}_lt_medianx{MEDIANLOW_EB}", f"{save_path}", change_hist_limits=True)
         #filling EE history plot
-        self.fill_history_subplots(df_EE, available_runs, "Laser3Amplitude_EE", f"{save_path}", change_hist_limits=True)
+        self.fill_history_subplots(df_EE, available_runs, "L3Amp_EE_gt_medianx{MEDIANUP_EE}_lt_medianx{MEDIANLOW_EE}", f"{save_path}", change_hist_limits=True)

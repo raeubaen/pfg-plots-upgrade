@@ -18,7 +18,11 @@ class Plugin:
         self.folder = folder  #given in the specific class
         self.plot_name = plot_name  #given in the specific class
         self.serverurl_online = " " #given in the specific class
-        
+
+        with open("conf.json", "r") as file:
+          data = json.load(file)
+        self.ecal_channels_csv_path = data["ChannelsCsvPath"]
+
 
     #take the json from the DQM and converting into a root object
     def get_root_object(self, run_info):
@@ -31,7 +35,6 @@ class Plugin:
             json_object["fZmin"] = 0
             return ROOT.TBufferJSON.ConvertFromJSON(json.dumps(json_object))
 
-    
     #fill the _data dict with the one run data
     def fill_data_one_run(self, run_info, one_run_data):
         self._data[run_info["run"]] = one_run_data
@@ -68,7 +71,10 @@ class Plugin:
         for ix, run in enumerate(run_list, start=1):
             hist.GetXaxis().SetBinLabel(ix, str(run))
         for iy in range(ybin_end-ybin_start):
-            hist.GetYaxis().SetBinLabel(iy+1, str(tower_list[ybin_start+iy]))
+            try:
+              hist.GetYaxis().SetBinLabel(iy+1, str(tower_list[ybin_start+iy]))
+            except:
+              continue
         #canva settings
         canva = ROOT.TCanvas(f"canva_{name}", "", 3600, 2250)
         canva.SetGrid()
@@ -111,7 +117,7 @@ class Plugin:
         run_df.apply(lambda row: self.df_to_hist(row, hist, tower_list, run_list), axis=1)
         #subhistograms if n_rows > 15
         nbinsy = hist.GetNbinsY()
-        max_bins = 15
+        max_bins = 25
         n_subhist = nbinsy // max_bins + (1 if nbinsy % max_bins > 0 else 0)
         for i in range(n_subhist):
             ybin_start = i * max_bins
