@@ -19,7 +19,7 @@ class Plugin:
         self.plot_name = plot_name  #given in the specific class
         self.serverurl_online = " " #given in the specific class
 
-        with open("conf.json", "r") as file:
+        with open(f"{os.path.dirname(os.path.realpath(__file__))}/../conf.json", "r") as file:
           data = json.load(file)
         self.ecal_channels_csv_path = data["ChannelsCsvPath"]
 
