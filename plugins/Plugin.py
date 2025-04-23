@@ -54,7 +54,7 @@ class Plugin:
         global palette_inverted
         ROOT.gStyle.SetNumberContours(n_contours)
         ROOT.gStyle.SetPalette(ROOT.kBeach)
-        # Inverti la palette solo la prima volta
+        #switch color palette for the first time
         if not palette_inverted:
             ROOT.TColor.InvertPalette()
             palette_inverted = True
