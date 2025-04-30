@@ -17,7 +17,7 @@ class Plugin:
         self.plot_name = plot_name  #given in the specific class
         self.serverurl_online = " " #given in the specific class
 
-        with open("conf.json", "r") as file:
+        with open(f"{os.path.dirname(os.path.realpath(__file__))}/../conf.json", "r") as file:
           data = json.load(file)
         self.ecal_channels_csv_path = data["ChannelsCsvPath"]
 
@@ -54,7 +54,7 @@ class Plugin:
         global palette_inverted
         ROOT.gStyle.SetNumberContours(n_contours)
         ROOT.gStyle.SetPalette(ROOT.kBeach)
-        # Inverti la palette solo la prima volta
+        #switch color palette for the first time
         if not palette_inverted:
             ROOT.TColor.InvertPalette()
             palette_inverted = True

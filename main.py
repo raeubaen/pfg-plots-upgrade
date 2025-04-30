@@ -44,7 +44,7 @@ def main():
         print("Error in reading the runlist file\nExiting from the execution of the program")
 
     #read the plugins
-    plugins = load_plugins("./conf.json")
+    plugins = load_plugins(f"{os.path.dirname(os.path.realpath(__file__))}/conf.json")
     #plugins = load_plugins("./conf_prova.json")
     print(f"List of plugins: {plugins}")
 
