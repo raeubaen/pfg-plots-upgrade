@@ -7,9 +7,12 @@ from collections import Counter
 from Plugin import Plugin
 import ECAL
 
+from TTStatus import TTStatus
 
+def read_hist(one_run_root_object, detector, df, supermodules_FED, run_dict, status_dict):
+    status_df = pd.DataFrame(status_dict)
 
-def read_hist(one_run_root_object, detector, df, supermodules_FED, run_dict):
+    status_df.to_csv("status.csv", index=None)
     nbinsx = one_run_root_object.GetNbinsX()
     nbinsy = one_run_root_object.GetNbinsY()
     if detector == "EB":
@@ -18,8 +21,12 @@ def read_hist(one_run_root_object, detector, df, supermodules_FED, run_dict):
                 if one_run_root_object.GetBinContent(ix, iy) != 0:
                     x = one_run_root_object.GetXaxis().GetBinLowEdge(ix)
                     y = one_run_root_object.GetYaxis().GetBinLowEdge(iy)
-                    df_phi = df[df["iphi"] == x+1] #+1 because the low edge belongs to the previous SM
-                    df_phi_eta = df_phi[df_phi["ieta"] == y+1] #+1 because the low edge belongs to the previous SM
+                    status_df_match = (status_df["y_eta"] == (y+5 if y>0 else y+4)) & (status_df["x_phi"] == x+5) & (status_df["status"] > 0)
+                    if status_df_match.any():
+                      print("skipping: ", detector, ix, status_df[status_df_match].x_phi, status_df[status_df_match].y_eta)
+                      continue
+                    df_phi = df[df["iphi"] == x] #+1 because the low edge belongs to the previous SM
+                    df_phi_eta = df_phi[df_phi["ieta"] == y] #+1 because the low edge belongs to the previous SM
                     info_dict = ECAL.fill_tcc_tt(df_phi_eta, supermodules_FED)
                     run_dict["label"].append(f"{info_dict['SM_label']} TCC{info_dict['tcc']} TT{info_dict['tt_ccu']}")
                     run_dict["value"].append(one_run_root_object.GetBinContent(ix, iy))
@@ -33,6 +40,10 @@ def read_hist(one_run_root_object, detector, df, supermodules_FED, run_dict):
                     df_x_y = df_x[df_x["iy"] == y]
                     if not df_x_y.empty:
                         df_x_y_m = df_x_y[df_x_y["fed"] <= 609] #choose the EE- fed
+                        status_df_match = (status_df["y_eta"] == y) & (status_df["x_phi"] == x) & (status_df["status"] > 0)
+                        if status_df_match.any():
+                          print("skipping: ", detector, ix, status_df[status_df_match].x_phi, status_df[status_df_match].y_eta)
+                          continue
                         info_dict = ECAL.fill_tcc_tt(df_x_y_m, supermodules_FED)
                         run_dict["label"].append(f"{info_dict['SM_label']} TCC{info_dict['tcc']} TT{info_dict['tt_ccu']}")
                         run_dict["value"].append(one_run_root_object.GetBinContent(ix, iy))
@@ -46,6 +57,10 @@ def read_hist(one_run_root_object, detector, df, supermodules_FED, run_dict):
                     df_x_y = df_x[df_x["iy"] == y]
                     if not df_x_y.empty:
                         df_x_y_p = df_x_y[df_x_y["fed"] >= 646] #choose the EE+ fed
+                        status_df_match = (status_df["y_eta"] == y) & (status_df["x_phi"] == x) & (status_df["status"] > 0)
+                        if status_df_match.any():
+                          print("skipping: ", detector, ix, status_df[status_df_match].x_phi, status_df[status_df_match].y_eta)
+                          continue
                         info_dict = ECAL.fill_tcc_tt(df_x_y_p, supermodules_FED)
                         run_dict["label"].append(f"{info_dict['SM_label']} TCC{info_dict['tcc']} TT{info_dict['tt_ccu']}")
                         run_dict["value"].append(one_run_root_object.GetBinContent(ix, iy))
@@ -98,23 +113,25 @@ class TTF4Occupancy(Plugin):
         #dictionary with single run info to fill with histogram data
         run_dict = {"label": [], "value": []}
 
+        status_dict = TTStatus(self.buildopener).get_status_dict(run_info)
+
         #EB
         self.folder = "EcalBarrel/EBTriggerTowerTask/"
         self.plot_name = "EBTTT TTF4 Occupancy"
         one_run_root_object = self.get_root_object(run_info)
-        read_hist(one_run_root_object, "EB", channels_df, supermodules_FED, run_dict)
+        read_hist(one_run_root_object, "EB", channels_df, supermodules_FED, run_dict, status_dict)
         
         #EE-
         self.folder = "EcalEndcap/EETriggerTowerTask/"
         self.plot_name = "EETTT TTF4 Occupancy EE -"
         one_run_root_object = self.get_root_object(run_info)
-        read_hist(one_run_root_object, "EE-", channels_df, supermodules_FED, run_dict)
+        read_hist(one_run_root_object, "EE-", channels_df, supermodules_FED, run_dict, status_dict)
 
         #EE+
         self.folder = "EcalEndcap/EETriggerTowerTask/"
         self.plot_name = "EETTT TTF4 Occupancy EE +"
         one_run_root_object = self.get_root_object(run_info)
-        read_hist(one_run_root_object, "EE+", channels_df, supermodules_FED, run_dict)
+        read_hist(one_run_root_object, "EE+", channels_df, supermodules_FED, run_dict, status_dict)
 
         #fill _data inside generic Plugin class after removing repetitions
         run_dict_unique = remove_doubles(run_dict)

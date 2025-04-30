@@ -6,9 +6,12 @@ import pandas as pd
 from Plugin import Plugin
 import ECAL
 
+from TTStatus import TTStatus
 
 
-def read_hist(one_run_root_object, labels, run_dict, supermodule):
+def read_hist(one_run_root_object, labels, run_dict, supermodule, status_dict):
+    status_df = pd.DataFrame(status_dict)
+
     nbinsx = one_run_root_object.GetNbinsX()
     nbinsy = one_run_root_object.GetNbinsY()
     yproj = one_run_root_object.ProjectionY("yproj", 1, 1)
@@ -18,10 +21,14 @@ def read_hist(one_run_root_object, labels, run_dict, supermodule):
             continue
         for ix in range(1, nbinsx+1):
             if one_run_root_object.GetBinContent(ix, iy) != 0:
+                status_df_match = (status_df["label"] == supermodule) & (status_df["tt_ccu"] == ix) & (status_df["status"] > 0)
+                if status_df_match.any():
+                  print("skipping: ", supermodule, ix, status_df[status_df_match].x_phi, status_df[status_df_match].y_eta)
+                  continue
+
                 run_dict["label"].append(f"{supermodule} TT{ix}")
                 run_dict["status"].append(iy)
                 run_dict["value"].append(one_run_root_object.GetBinContent(ix, iy)/yproj.GetEntries())
-    
 
 class FEStatusBits(Plugin):
     def __init__(self, buildopener):
@@ -33,14 +40,16 @@ class FEStatusBits(Plugin):
         labels = ECAL.FEstatus_labels        
         #dictionary with single run status info to fill with histogram data
         run_dict = {"label": [], "status": [], "value": []}
-        
+
+        status_dict = TTStatus(self.buildopener).get_status_dict(run_info)
+
         #EB
         EBsupermodules_list = ECAL.EBsupermodules_list
         for i, EBsupermodule in enumerate(EBsupermodules_list):
             self.folder = "EcalBarrel/EBStatusFlagsTask/FEStatus/"
             self.plot_name = f"EBSFT front-end status bits {EBsupermodule}"
             one_run_root_object = self.get_root_object(run_info)
-            read_hist(one_run_root_object, labels, run_dict, EBsupermodule)
+            read_hist(one_run_root_object, labels, run_dict, EBsupermodule, status_dict)
                         
         #EE
         EEsupermodules_list = ECAL.EEsupermodules_list
@@ -48,7 +57,7 @@ class FEStatusBits(Plugin):
             self.folder = "EcalEndcap/EEStatusFlagsTask/FEStatus/"
             self.plot_name = f"EESFT front-end status bits {EEsupermodule}"
             one_run_root_object = self.get_root_object(run_info)
-            read_hist(one_run_root_object, labels, run_dict, EEsupermodule)
+            read_hist(one_run_root_object, labels, run_dict, EEsupermodule, status_dict)
             
         #fill _data inside generic Plugin class
         self.fill_data_one_run(run_info, run_dict)

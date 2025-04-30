@@ -9,8 +9,6 @@ from json_handler import dqm_get_json
 
 palette_inverted = False
 
-
-
 class Plugin:
     def __init__(self, buildopener, folder=None, plot_name=None):
         self._data = {}
@@ -23,23 +21,25 @@ class Plugin:
           data = json.load(file)
         self.ecal_channels_csv_path = data["ChannelsCsvPath"]
 
-
     #take the json from the DQM and converting into a root object
     def get_root_object(self, run_info):
         json_str = dqm_get_json(self.buildopener, run_info["run"], run_info["dataset"], self.folder, self.plot_name)
         try:
-            return ROOT.TBufferJSON.ConvertFromJSON(str(json_str))
+            obj = ROOT.TBufferJSON.ConvertFromJSON(str(json_str))
         except cppyy.gbl.nlohmann.detail.out_of_range:
             json_object = json.loads(json_str)
             json_object["fZmax"] = 1e+10
             json_object["fZmin"] = 0
-            return ROOT.TBufferJSON.ConvertFromJSON(json.dumps(json_object))
+            obj = ROOT.TBufferJSON.ConvertFromJSON(json.dumps(json_object))
+        filename = "/tmp/"+f"plot_{run_info['run']}-{self.folder}-{self.plot_name}.root".replace(' ', '.').replace('/', '.')
+        obj.SaveAs(filename)
+        return obj
 
     #fill the _data dict with the one run data
     def fill_data_one_run(self, run_info, one_run_data):
         self._data[run_info["run"]] = one_run_data
 
-        
+
     #get the one run data giving the run number
     def get_data_one_run(self, run):
         return self._data[run]
@@ -114,6 +114,7 @@ class Plugin:
         tower_list = list(pd.unique(run_df.label))
         run_list = list(available_runs)
         hist = ROOT.TH2F(f"{name}", "", len(run_list), 0., len(run_list)+1, len(tower_list), 0., len(tower_list)+1)
+        run_df.to_csv(f"{save_path}{name}.csv", index=None)
         run_df.apply(lambda row: self.df_to_hist(row, hist, tower_list, run_list), axis=1)
         #subhistograms if n_rows > 15
         nbinsy = hist.GetNbinsY()

@@ -5,6 +5,8 @@ import pandas as pd
 
 from Plugin import Plugin
 import ECAL
+from ChannelStatus import ChannelStatus
+
 
 LOW_LIMIT = 0.3
 UP_LIMIT = 7
@@ -12,25 +14,39 @@ MIN_VALUE = 0
 
 
 
-def read_hist(one_run_root_object, run_dict, supermodule):
+def read_hist(one_run_root_object, run_dict, supermodule, status_dict):
+    status_df = pd.DataFrame(status_dict)
+
+    #status_df.to_csv("prova.csv", index=None)
+    #sys.exit(0)
+
     nbinsx = one_run_root_object.GetNbinsX()
     nbinsy = one_run_root_object.GetNbinsY()
     for iy in range(1, nbinsy+1):
         for ix in range(1, nbinsx+1):
             if (one_run_root_object.GetBinContent(ix, iy) < LOW_LIMIT and one_run_root_object.GetBinContent(ix, iy) > MIN_VALUE) or one_run_root_object.GetBinContent(ix, iy) > UP_LIMIT:
-                if "EB-" in supermodule: #y -> iphi, x -> ieta
+                if "EB-" in supermodule: #y -> iphi, x -> -ieta
                     x = int(one_run_root_object.GetXaxis().GetBinUpEdge(ix))
                     y = int(one_run_root_object.GetYaxis().GetBinUpEdge(iy))
+                    status_df_match = (status_df["y_eta"] == -x) & (status_df["x_phi"] == y) & (status_df["status"] >= 3)
+                    if status_df_match.any():
+                      continue
                     run_dict["label"].append(f"{supermodule} [+{y}, -{x}]")
                     run_dict["value"].append(one_run_root_object.GetBinContent(ix, iy))
                 elif "EB+" in supermodule: #y -> iphi, x -> ieta
                     x = int(one_run_root_object.GetXaxis().GetBinUpEdge(ix))
                     y = int(-one_run_root_object.GetYaxis().GetBinLowEdge(iy))
+                    status_df_match = (status_df["y_eta"] == x) & (status_df["x_phi"] == y) & (status_df["status"] >= 3)
+                    if status_df_match.any():
+                      continue
                     run_dict["label"].append(f"{supermodule} [+{y}, +{x}]")
                     run_dict["value"].append(one_run_root_object.GetBinContent(ix, iy))
                 elif "EE" in supermodule: #y -> iy, x -> ix
                     x = int(one_run_root_object.GetXaxis().GetBinUpEdge(ix))
                     y = int(one_run_root_object.GetYaxis().GetBinUpEdge(iy))
+                    status_df_match = (status_df["y_eta"] == x) & (status_df["x_phi"] == y) & (status_df["status"] >= 3)
+                    if status_df_match.any():
+                      continue
                     run_dict["label"].append(f"{supermodule} [+{x}, +{y}]")
                     run_dict["value"].append(one_run_root_object.GetBinContent(ix, iy))
 
@@ -44,13 +60,15 @@ class RMSChannels(Plugin):
         #dictionary with single run status info to fill with histogram data
         run_dict = {"label": [], "value": []}
 
+        status_dict = ChannelStatus(self.buildopener).get_status_dict(run_info)
+
         #EB
         EBsupermodules_list = ECAL.EBsupermodules_list
         for i, EBsupermodule in enumerate(EBsupermodules_list):
             self.folder = "EcalBarrel/EBPedestalOnlineClient/"
             self.plot_name = f"EBPOT pedestal rms map G12 {EBsupermodule}"
             one_run_root_object = self.get_root_object(run_info)
-            read_hist(one_run_root_object, run_dict, EBsupermodule)
+            read_hist(one_run_root_object, run_dict, EBsupermodule, status_dict)
 
         #EE
         EEsupermodules_list = ECAL.EEsupermodules_list
@@ -59,7 +77,7 @@ class RMSChannels(Plugin):
             self.plot_name = f"EEPOT pedestal rms map G12 {EEsupermodule}"
             self.serverurl_online = "online"
             one_run_root_object = self.get_root_object(run_info)
-            read_hist(one_run_root_object, run_dict, EEsupermodule)
+            read_hist(one_run_root_object, run_dict, EEsupermodule, status_dict)
 
         #fill _data inside generic Plugin class
         self.fill_data_one_run(run_info, run_dict)

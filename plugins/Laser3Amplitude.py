@@ -6,6 +6,7 @@ import numpy as np
 
 from Plugin import Plugin
 import ECAL
+from ChannelStatus import ChannelStatus
 
 
 MEDIANUP_EB = 2
@@ -14,7 +15,9 @@ MEDIANUP_EE = 3
 MEDIANLOW_EE = 0.003
 
 
-def read_hist_EB(one_run_root_object, supermodule, Ichannels, Lchannels):
+def read_hist_EB(one_run_root_object, supermodule, Ichannels, Lchannels, status_dict):
+    status_df = pd.DataFrame(status_dict)
+
     nbinsx = one_run_root_object.GetNbinsX()
     nbinsy = one_run_root_object.GetNbinsY()
     sm = int(supermodule[2:])
@@ -23,6 +26,8 @@ def read_hist_EB(one_run_root_object, supermodule, Ichannels, Lchannels):
             for ix in range(1, nbinsx+1):
                 x = int(one_run_root_object.GetXaxis().GetBinUpEdge(ix))
                 y = int(one_run_root_object.GetYaxis().GetBinUpEdge(iy))
+                status_df_match = (status_df["y_eta"] == -x) & (status_df["x_phi"] == y) & (status_df["status"] >= 3)
+                if status_df_match.any(): continue
                 if isIBlock(sm, one_run_root_object, ix, iy):
                     Ichannels["label"].append(f"{supermodule} [+{y}, -{x}]")
                     Ichannels["value"].append(one_run_root_object.GetBinContent(ix, iy))
@@ -34,6 +39,9 @@ def read_hist_EB(one_run_root_object, supermodule, Ichannels, Lchannels):
             for ix in range(1, nbinsx+1):
                 x = int(one_run_root_object.GetXaxis().GetBinUpEdge(ix))
                 y = int(-one_run_root_object.GetYaxis().GetBinLowEdge(iy))
+                status_df_match = (status_df["y_eta"] == x) & (status_df["x_phi"] == y) & (status_df["status"] >= 3)
+                if status_df_match.any(): continue
+
                 if isIBlock(sm, one_run_root_object, ix, iy):
                     Ichannels["label"].append(f"{supermodule} [+{y}, +{x}]")
                     Ichannels["value"].append(one_run_root_object.GetBinContent(ix, iy))
@@ -42,7 +50,9 @@ def read_hist_EB(one_run_root_object, supermodule, Ichannels, Lchannels):
                     Lchannels["value"].append(one_run_root_object.GetBinContent(ix, iy))
 
 
-def read_hist_EE(one_run_root_object, supermodule, EEchannels):
+def read_hist_EE(one_run_root_object, supermodule, EEchannels, status_dict):
+    status_df = pd.DataFrame(status_dict)
+
     nbinsx = one_run_root_object.GetNbinsX()
     nbinsy = one_run_root_object.GetNbinsY()
     for iy in range(1, nbinsy+1):
@@ -50,6 +60,9 @@ def read_hist_EE(one_run_root_object, supermodule, EEchannels):
             if abs(one_run_root_object.GetBinContent(ix, iy)) != 0:
                 x = int(one_run_root_object.GetXaxis().GetBinUpEdge(ix))
                 y = int(one_run_root_object.GetYaxis().GetBinUpEdge(iy))
+                status_df_match = (status_df["y_eta"] == x) & (status_df["x_phi"] == y) & (status_df["status"] >= 3)
+                if status_df_match.any(): continue
+
                 EEchannels["label"].append(f"{supermodule} [+{x}, +{y}]")
                 EEchannels["value"].append(one_run_root_object.GetBinContent(ix, iy))
                 EEchannels["LightMR"].append(ECAL.EELightMR(x, y))
@@ -130,7 +143,6 @@ def getBadXY(available_runs, run_dict_temp, run_dict):
         channels = channels_filtered[:, i]
         for j, run in enumerate(available_runs):
             if "EB" in channels[0]:
-                #if "EB+10" in channels[0]: print("ch: ", channels, "values: ", values_column)
                 if values_column[j] < MEDIANLOW_EB or values_column[j] > MEDIANUP_EB:
                     run_dict["label"].extend(channels.tolist())
                     run_dict["value"].extend(values_column.tolist())
@@ -153,6 +165,8 @@ class Laser3Amplitude(Plugin):
     def process_one_run(self, run_info):
         run_dict = {"label": [], "value":[]}
 
+        status_dict = ChannelStatus(self.buildopener).get_status_dict(run_info)
+
         #EB
         EBsupermodules_list = ECAL.EBsupermodules_list
         for i, EBsupermodule in enumerate(EBsupermodules_list):
@@ -161,7 +175,7 @@ class Laser3Amplitude(Plugin):
             Ichannels = {"label": [], "value": []}
             Lchannels = {"label": [], "value": []}
             one_run_root_object = self.get_root_object(run_info)
-            read_hist_EB(one_run_root_object, EBsupermodule, Ichannels, Lchannels)
+            read_hist_EB(one_run_root_object, EBsupermodule, Ichannels, Lchannels, status_dict)
             dividebymedian_EB(Ichannels, Lchannels)
             run_dict["label"].extend(Ichannels["label"] + Lchannels["label"])
             run_dict["value"].extend(Ichannels["value"] + Lchannels["value"])
@@ -173,7 +187,7 @@ class Laser3Amplitude(Plugin):
             self.plot_name = f"EELT amplitude {EEsupermodule} L3"
             EEchannels = {"label": [], "value": [], "LightMR": []}
             one_run_root_object = self.get_root_object(run_info)
-            read_hist_EE(one_run_root_object, EEsupermodule, EEchannels)
+            read_hist_EE(one_run_root_object, EEsupermodule, EEchannels, status_dict)
             dividebymedian_EE(EEchannels)
             run_dict["label"].extend(EEchannels["label"])
             run_dict["value"].extend(EEchannels["value"])
