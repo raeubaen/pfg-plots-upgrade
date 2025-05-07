@@ -36,6 +36,7 @@ def main():
     parser = argparse.ArgumentParser(description="csv file to get run and dataset information")
     parser.add_argument('runlist_csvfile_path', type=str, help="Path to the runlist file")
     parser.add_argument('plot_folder', type=str, help="Path to save plots")
+    parser.add_argument('--override_json_with_plugin_list', nargs='+', help='List of items')
     args = parser.parse_args()
 
     #read the csv input file and convert into a list of dict: [{"run": 294295, "dataset": "blablabla"}, {...}, ...]
@@ -44,8 +45,10 @@ def main():
         print("Error in reading the runlist file\nExiting from the execution of the program")
 
     #read the plugins
-    plugins = load_plugins(f"{os.path.dirname(os.path.realpath(__file__))}/conf.json")
-    #plugins = load_plugins("./conf_prova.json")
+    if args.override_json_with_plugin_list is None:
+        plugins = load_plugins(f"{os.path.dirname(os.path.realpath(__file__))}/conf.json")
+    else:
+        plugins = args.override_json_with_plugin_list
     print(f"List of plugins: {plugins}")
 
     #plugins directory path

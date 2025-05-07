@@ -95,12 +95,11 @@ class Plugin:
         hist.GetZaxis().SetTickLength(0.02)
         hist.SetMinimum(hist_min)
         hist.SetMaximum(hist_max)
-        hist.SetMarkerSize(1.5)
-        if len(run_list) <= 10:
-            ROOT.gStyle.SetPaintTextFormat(".1e")
-            hist.Draw("text COLZ")
-        else:
-            hist.Draw("COLZ")
+        text_sf = 1
+        if len(run_list) > 10: text_sf = 10/len(run_list)
+        hist.SetMarkerSize(1.5*text_sf)
+        ROOT.gStyle.SetPaintTextFormat(".1e")
+        hist.Draw("text COLZ")
         canva.Modified()
         canva.Update()
         #saving

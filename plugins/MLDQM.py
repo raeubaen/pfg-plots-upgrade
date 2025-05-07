@@ -11,6 +11,7 @@ import ECAL
 
 def read_hist(one_run_root_object, status_dict, detector, df, supermodules_FED, run_dict):
     status_df = pd.DataFrame(status_dict)
+    status_df.to_csv("status.csv", index=None)
     nbinsx = one_run_root_object.GetNbinsX()
     nbinsy = one_run_root_object.GetNbinsY()
     if detector == "EB":
@@ -22,10 +23,12 @@ def read_hist(one_run_root_object, status_dict, detector, df, supermodules_FED, 
                     df_phi = df[df["iphi"] == x+1]
                     df_phi_eta = df_phi[df_phi["ieta"] == y+1]
                     info_dict = ECAL.fill_tcc_tt(df_phi_eta, supermodules_FED)
-                    status_df_match = status_df[(status_df["label"] == info_dict["SM_label"]) & (status_df["tcc"] == info_dict["tcc"]) & (status_df["tt_ccu"] == info_dict["tt_ccu"]) & (status_df["status"] >= 3)]
-                    if status_df_match.empty:
-                        run_dict["label"].append(f"{info_dict['SM_label']} TCC{info_dict['tcc']} TT{info_dict['tt_ccu']}")
-                        run_dict["value"].append(one_run_root_object.GetBinContent(ix, iy))
+                    status_df_match = (status_df["label"] == info_dict["SM_label"]) & (status_df["tcc"] == info_dict["tcc"]) & (status_df["tt_ccu"] == info_dict["tt_ccu"]) & (status_df["status"] >= 3)
+                    if status_df_match.any(): continue
+                    value = one_run_root_object.GetBinContent(ix, iy)
+                    if value < 0.3: continue
+                    run_dict["label"].append(f"{info_dict['SM_label']} TCC{info_dict['tcc']} TT{info_dict['tt_ccu']}")
+                    run_dict["value"].append(one_run_root_object.GetBinContent(ix, iy))
     if detector == "EE-":
         for iy in range(1, nbinsy+1):
             for ix in range(1, nbinsx+1):
