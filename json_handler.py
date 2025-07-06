@@ -1,5 +1,6 @@
 import os, sys, urllib.request, urllib.error, urllib.parse, http.client, json
 import array
+import traceback
 
 ident = "DQMToJson/1.0 python/%d.%d.%d" % sys.version_info[:3]
 
@@ -46,6 +47,8 @@ def x509_params():
 
 
 def dqm_get_json(buildopener, run, dataset, folder, plotname):
+    print(buildopener)
+
     if dataset != "/Global/Online/ALL/":
         print(f"Error in dataset of run {run}, it should be: /Global/Online/ALL/\nControl the runlist file in input")
         print("Exiting from the execution of the program")
@@ -60,4 +63,15 @@ def dqm_get_json(buildopener, run, dataset, folder, plotname):
     datareq = urllib.request.Request(url)
     datareq.add_header('User-agent', ident)
 
-    return buildopener.open(datareq).read().decode("utf-8")
+    print("datareq: ", datareq)
+
+    for i in range(50):
+      if i>0: print(f"\n\n\nDEBUG ---------- retrying to read --------- {i}-th time\n\n\n")
+      try:
+        obj = buildopener.open(datareq).read().decode("utf-8")
+      except Exception:
+        print(traceback.format_exc())
+      else:
+        break
+
+    return obj

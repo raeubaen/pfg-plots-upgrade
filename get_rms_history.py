@@ -37,16 +37,16 @@ def main():
     parser = argparse.ArgumentParser(description="csv file to get run and dataset information")
     parser.add_argument('runlist_csvfile_path', type=str, help="Path to the runlist file")
     parser.add_argument('plot_folder', type=str, help="Path to save plots")
+    parser.add_argument('ch_list', type=str, help="ch list: [{'x_phi': 0, 'y_eta': 0, 'SM': 'EB+0'},{'x_phi': 0, 'y_eta': 0, 'SM': 'EB+0'}]")
     args = parser.parse_args()
-    
+
     #read the csv input file and convert into a list of dict: [{"run": 294295, "dataset": "blablabla"}, {...}, ...]
     runlist = read_csv(args.runlist_csvfile_path)
     if runlist is None:
         print("Error in reading the runlist file\nExiting from the execution of the program")
 
     #read the plugins
-    plugins = load_plugins(f"{os.path.dirname(os.path.realpath(__file__))}/conf.json")
-    #plugins = load_plugins("./conf_prova.json")
+    plugins = ["RMSHistory_nocuts"]
     print(f"List of plugins: {plugins}")
 
     #plugins directory path
@@ -57,7 +57,7 @@ def main():
     for plugin in plugins:
         print(f"Caricamento del plugin: {plugin}")
         mod = importlib.import_module(f"{plugin}")
-        instance = getattr(mod, f"{plugin}")(buildopener)
+        instance = getattr(mod, f"{plugin}")(buildopener, eval(args.ch_list))
         #loop over runs
         for item in runlist:
             run = item["run"]
@@ -72,6 +72,6 @@ def main():
         #create the history plot
         instance.create_history_plots(args.plot_folder)
         print("\n")
-        
+
 if __name__ == "__main__":
     main()
