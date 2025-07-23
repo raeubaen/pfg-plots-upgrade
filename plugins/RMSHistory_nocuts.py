@@ -5,7 +5,6 @@ import pandas as pd
 
 from Plugin import Plugin
 import ECAL
-from ChannelStatus import ChannelStatus
 
 
 LOW_LIMIT = 0.1
@@ -14,8 +13,7 @@ MIN_VALUE = 0
 
 
 
-def read_hist(one_run_root_object, run_dict, supermodule, status_dict, ch_list):
-    status_df = pd.DataFrame(status_dict)
+def read_hist(one_run_root_object, run_dict, supermodule, ch_list):
 
 
     print("ch_list", ch_list)
@@ -29,7 +27,7 @@ def read_hist(one_run_root_object, run_dict, supermodule, status_dict, ch_list):
                     x = int(one_run_root_object.GetXaxis().GetBinUpEdge(ix))
                     y = int(one_run_root_object.GetYaxis().GetBinUpEdge(iy))
                     for c in ch_list:
-                      if c["y_eta"] == -x and c["x_phi"] == y: break
+                      if c["y_eta"] == -x and c["x_phi"] == y and c["SM"]==supermodule: break
                     else: continue
                     run_dict["label"].append(f"{supermodule} [+{y}, -{x}]")
                     run_dict["value"].append(one_run_root_object.GetBinContent(ix, iy))
@@ -37,7 +35,7 @@ def read_hist(one_run_root_object, run_dict, supermodule, status_dict, ch_list):
                     x = int(one_run_root_object.GetXaxis().GetBinUpEdge(ix))
                     y = int(-one_run_root_object.GetYaxis().GetBinLowEdge(iy))
                     for c in ch_list:
-                      if c["y_eta"] == x and c["x_phi"] == y: break
+                      if c["y_eta"] == x and c["x_phi"] == y and c["SM"]==supermodule: break
                     else: continue
                     run_dict["label"].append(f"{supermodule} [+{y}, +{x}]")
                     run_dict["value"].append(one_run_root_object.GetBinContent(ix, iy))
@@ -45,7 +43,7 @@ def read_hist(one_run_root_object, run_dict, supermodule, status_dict, ch_list):
                     x = int(one_run_root_object.GetXaxis().GetBinUpEdge(ix))
                     y = int(one_run_root_object.GetYaxis().GetBinUpEdge(iy))
                     for c in ch_list:
-                      if c["y_eta"] == x and c["x_phi"] == y: break
+                      if c["y_eta"] == x and c["x_phi"] == y and c["SM"]==supermodule: break
                     else: continue
                     run_dict["label"].append(f"{supermodule} [+{x}, +{y}]")
                     run_dict["value"].append(one_run_root_object.GetBinContent(ix, iy))
@@ -60,8 +58,6 @@ class RMSHistory_nocuts(Plugin):
         #dictionary with single run status info to fill with histogram data
         run_dict = {"label": [], "value": []}
 
-        status_dict = ChannelStatus(self.buildopener).get_status_dict(run_info)
-
         #EB
         EBsupermodules_list = ECAL.EBsupermodules_list
         for i, EBsupermodule in enumerate(EBsupermodules_list):
@@ -73,7 +69,7 @@ class RMSHistory_nocuts(Plugin):
             self.folder = "EcalBarrel/EBPedestalOnlineClient/"
             self.plot_name = f"EBPOT pedestal rms map G12 {EBsupermodule}"
             one_run_root_object = self.get_root_object(run_info)
-            read_hist(one_run_root_object, run_dict, EBsupermodule, status_dict, currentSM_ch_list)
+            read_hist(one_run_root_object, run_dict, EBsupermodule,  currentSM_ch_list)
 
         #EE
         EEsupermodules_list = ECAL.EEsupermodules_list
@@ -87,7 +83,7 @@ class RMSHistory_nocuts(Plugin):
             self.plot_name = f"EEPOT pedestal rms map G12 {EEsupermodule}"
             self.serverurl_online = "online"
             one_run_root_object = self.get_root_object(run_info)
-            read_hist(one_run_root_object, run_dict, EEsupermodule, status_dict, currentSM_ch_list)
+            read_hist(one_run_root_object, run_dict, EEsupermodule, currentSM_ch_list)
 
         #fill _data inside generic Plugin class
         self.fill_data_one_run(run_info, run_dict)
