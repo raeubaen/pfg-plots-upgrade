@@ -29,3 +29,7 @@ mkdir -p $eos_pfg_performance_plots_2025/week$week/$day
 
 /bin/cp $eos_pfg_performance_plots_2025/index.php $eos_pfg_performance_plots_2025/week$week
 ```
+
+
+For the RMS history only:
+create a file list using get_runlist_for_plots_multiple_weeks.sh (the output has to be similar to normal runlist.csv files), then use get_rms_history.py
