@@ -1,5 +1,6 @@
 def ch_to_tt(iPhi, iEta):
-    return (abs(iEta)//5)*4 + 1 + ((360 - iPhi)%20)//5
+    if iEta > 0: iPhi = 360 - iPhi
+    return ((abs(iEta)-1)//5)*4 + 1 + ((iPhi-1)%20)//5
 
 if __name__ == "__main__":
   import sys
