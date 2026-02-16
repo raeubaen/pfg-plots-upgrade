@@ -8,7 +8,6 @@ import traceback
 from pathlib import Path
 from json_handler import x509_params, dqm_get_json
 from cert_opener import X509CertAuth, X509CertOpen
-import ch_to_tt, tt_to_hv
 
 import numpy as np
 
@@ -47,7 +46,7 @@ def main():
         print("Error in reading the runlist file\nExiting from the execution of the program")
 
     #read the plugins
-    plugins = ["RMSHistory_nocuts"]
+    plugins = ["LaserHistory_nocuts"]
     print(f"List of plugins: {plugins}")
 
     #plugins directory path
@@ -76,14 +75,14 @@ def main():
 
     ROOT.gROOT.LoadMacro("root_logon.C")
 
-    df = pd.read_csv(f"{args.plot_folder}/EB_RMSHistory.csv")
+    df = pd.read_csv(f"{args.plot_folder}/EB_LaserHistory.csv")
     ch_list_evalled = eval(args.ch_list)
     for ch in ch_list_evalled:
       current_df = df[(df.sm_ch == int(ch["SM"].replace("EB", "").replace("EE",""))) & (df.iphi_ix == ch["x_phi"]) & (df.ieta_iy == ch["y_eta"])]
-      rms_array = current_df.value.to_numpy().astype(float)
+      Laser_array = current_df.value.to_numpy().astype(float)
       run_array = current_df.run.to_numpy().astype(float)
       min_run_thousands = int(np.min(run_array // 1000) * 1000)
-      g = ROOT.TGraph(len(rms_array), run_array - min_run_thousands, rms_array)
+      g = ROOT.TGraph(len(Laser_array), run_array - min_run_thousands, Laser_array)
       g.Sort()
 
       x_min = ROOT.TMath.MinElement(g.GetN(), g.GetX())
@@ -108,7 +107,7 @@ def main():
 
       # Draw the graph on top
       g.Draw("PL SAME")  # or "ALP SAME" depending on your style
-      frame.GetYaxis().SetTitle("RMS (DQM coll. runs) [ADC counts]")
+      frame.GetYaxis().SetTitle("Laser (DQM coll. runs) [ADC counts]")
       frame.GetXaxis().SetTitle(f"#Run - {min_run_thousands}")
 
       current_max = frame.GetMaximum()
@@ -116,13 +115,6 @@ def main():
       c.SaveAs(f"{args.plot_folder}/{ch_string}.pdf")
       c.SaveAs(f"{args.plot_folder}/{ch_string}.png")
       c.SaveAs(f"{args.plot_folder}/{ch_string}.root")
-
-    for ch in ch_list_evalled:
-      if 'EB' not in ch['SM']: continue
-      tt = ch_to_tt.ch_to_tt(ch['x_phi'], ch['y_eta'])
-
-      dcs, hvboard, hvch = tt_to_hv.get_board_ch(tt, ch['SM'])
-      print(f"{ch['SM']} iPhi {ch['x_phi']} iEta {ch['y_eta']} is in TT {tt} and in: EB HV (DCS {dcs}) board {hvboard} ch {hvch}")
 
 if __name__ == "__main__":
     main()

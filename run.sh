@@ -25,3 +25,9 @@ mkdir -p $eos_pfg_performance_plots_2025/week$week/$day
 /bin/cp $eos_pfg_performance_plots_2025/index.php $eos_pfg_performance_plots_2025/week$week/$day/
 
 /bin/cp $eos_pfg_performance_plots_2025/index.php $eos_pfg_performance_plots_2025/week$week
+
+
+mkdir -p $eos_pfg_performance_plots_2025/week$week/weekly_summary/
+python3 week_summary.py $week $eos_pfg_performance_plots_2025/week$week/weekly_summary/
+/bin/cp $eos_pfg_performance_plots_2025/index.php $eos_pfg_performance_plots_2025/week$week/weekly_summary/
+
