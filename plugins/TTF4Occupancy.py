@@ -25,8 +25,8 @@ def read_hist(one_run_root_object, detector, df, supermodules_FED, run_dict, sta
                     if status_df_match.any():
                       print("skipping: ", detector, ix, status_df[status_df_match].x_phi, status_df[status_df_match].y_eta)
                       continue
-                    df_phi = df[df["iphi"] == x] #+1 because the low edge belongs to the previous SM
-                    df_phi_eta = df_phi[df_phi["ieta"] == y] #+1 because the low edge belongs to the previous SM
+                    df_phi = df[df["iphi"] == x+1] #+1 because the low edge belongs to the previous SM
+                    df_phi_eta = df_phi[df_phi["ieta"] == y+1] #+1 because the low edge belongs to the previous SM
                     info_dict = ECAL.fill_tcc_tt(df_phi_eta, supermodules_FED)
                     run_dict["label"].append(f"{info_dict['SM_label']} TCC{info_dict['tcc']} TT{info_dict['tt_ccu']}")
                     run_dict["value"].append(one_run_root_object.GetBinContent(ix, iy))

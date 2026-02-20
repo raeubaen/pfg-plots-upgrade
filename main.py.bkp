@@ -31,14 +31,13 @@ def main():
     #set the certificate and the key needed
     X509CertAuth.ssl_key_file, X509CertAuth.ssl_cert_file = x509_params()
     buildopener = urllib.request.build_opener(X509CertOpen())
-    print(buildopener)
 
     #create parser to read arguments from command line
     parser = argparse.ArgumentParser(description="csv file to get run and dataset information")
     parser.add_argument('runlist_csvfile_path', type=str, help="Path to the runlist file")
     parser.add_argument('plot_folder', type=str, help="Path to save plots")
     args = parser.parse_args()
-    
+
     #read the csv input file and convert into a list of dict: [{"run": 294295, "dataset": "blablabla"}, {...}, ...]
     runlist = read_csv(args.runlist_csvfile_path)
     if runlist is None:
@@ -72,6 +71,6 @@ def main():
         #create the history plot
         instance.create_history_plots(args.plot_folder)
         print("\n")
-        
+
 if __name__ == "__main__":
     main()

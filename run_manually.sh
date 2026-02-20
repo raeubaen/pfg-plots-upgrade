@@ -1,18 +1,9 @@
-on lxplus:
-```
-source /cvmfs/sft.cern.ch/lcg/views/LCG_106/x86_64-el9-gcc13-opt/setup.sh
-python3 main.py <runlist.csv> <output_folder>
-```
-
-
-A more complete script:
-```
-!/bin/bash
-
-week=$(date -d '+1 week' +%W)
-day=$(date +%d-%B)
+week=$1
+day=$2
 
 source /cvmfs/sft.cern.ch/lcg/views/LCG_106/x86_64-el9-gcc13-opt/setup.sh
+
+mkdir ../temp_pfg_plots_folder/
 
 rm -f ../temp_pfg_plots_folder/*
 
@@ -28,8 +19,4 @@ mkdir -p $eos_pfg_performance_plots_2025/week$week/$day
 /bin/cp $eos_pfg_performance_plots_2025/index.php $eos_pfg_performance_plots_2025/week$week/$day/
 
 /bin/cp $eos_pfg_performance_plots_2025/index.php $eos_pfg_performance_plots_2025/week$week
-```
 
-
-For the RMS history only:
-create a file list using get_runlist_for_plots_multiple_weeks.sh (the output has to be similar to normal runlist.csv files), then use get_rms_history.py

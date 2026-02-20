@@ -69,6 +69,8 @@ def read_hist_status(one_run_root_object_status, status_dict, detector, df, supe
 class ChannelStatus(Plugin):
     def __init__(self, buildopener):
         Plugin.__init__(self, buildopener, folder="", plot_name="")
+        self.folder = "EcalBarrel/EBIntegrityClient/"
+        self.plot_name = "EBIT channel status map"
 
     def get_status_dict(self, run_info):
         #load the file with all the info about the ECAL channels
@@ -78,7 +80,6 @@ class ChannelStatus(Plugin):
         #dictionary with single run status map
         status_dict = {"label": [], "tcc": [], "tt_ccu": [], "x_phi": [], "y_eta": [], "status": []}
         #dictionary with single run info to fill with histogram data
-        run_dict = {"label": [], "value": []}
 
         #EB status map
         self.folder = "EcalBarrel/EBIntegrityClient/"
