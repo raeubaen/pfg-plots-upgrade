@@ -1,4 +1,4 @@
-import os, sys, urllib.request, urllib.error, urllib.parse, http.client
+import os, sys, urllib.request, urllib.error, urllib.parse, http.client, re
 import ROOT
 import json
 import cppyy
@@ -27,6 +27,7 @@ class Plugin:
     #take the json from the DQM and converting into a root object
     def get_root_object(self, run_info):
         json_str = dqm_get_json(self.buildopener, run_info["run"], run_info["dataset"], self.folder, self.plot_name)
+        json_str = re.sub(r'\b[0-9]+e[0-9]{3,}\b', '0', json_str)
         try:
             return ROOT.TBufferJSON.ConvertFromJSON(str(json_str))
         except cppyy.gbl.nlohmann.detail.out_of_range:
