@@ -40,7 +40,7 @@ if [ -f "/eos/user/r/rgargiul/www/alarms.html" ] && [ -s "/eos/user/r/rgargiul/w
   echo "</body></html>" >> /eos/user/r/rgargiul/www/alarms_mail.html
   TO="cms-ecal-runcoord@cern.ch,ruben.gargiulo@cern.ch"
   #TO="ruben.gargiulo@cern.ch"
-  SUBJECT="Laser problems - functionality test (no real alarm)"
+  SUBJECT="Laser problems (disk or uploads)"
 
   BODY=$(cat /eos/user/r/rgargiul/www/alarms_mail.html)
 

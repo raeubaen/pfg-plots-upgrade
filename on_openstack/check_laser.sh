@@ -2,7 +2,7 @@ source /cvmfs/sft.cern.ch/lcg/views/LCG_106/x86_64-el9-gcc13-opt/setup.sh
 source omsvenv/bin/activate
 cd /root/oms-api-client/get-runs-oms
 
-python3 get-runs-oms.py --durationthr 40 --year "$(date +%Y)" --month "$(date +%-m)" --lsthr 300 --ecal | tail -n 1 > /root/last_or_current_run
+python3 get-runs-oms.py --durationthr 0 --year "$(date +%Y)" --month "$(date +%-m)" --lsthr 0 --ecal | tail -n 1 > /root/last_or_current_run
 
 cd /root
 
