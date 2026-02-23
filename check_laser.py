@@ -11,7 +11,7 @@ try:
   from datetime import datetime, timedelta
 
   DISK_PERC = 90
-  DELTA_MAX = 180
+  DELTA_MAX = 240
 
   oms_string = sys.argv[1]
 
