@@ -60,4 +60,3 @@ table = div.find("table")
 print(p2)
 # Print full HTML of the table
 print(table.prettify())
-
