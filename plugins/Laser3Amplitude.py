@@ -12,7 +12,7 @@ from ChannelStatus import ChannelStatus
 MEDIANUP_EB = 2
 MEDIANLOW_EB = 0.1
 MEDIANUP_EE = 3
-MEDIANLOW_EE = 0.003
+MEDIANLOW_EE = 0.001
 
 
 def read_hist_EB(one_run_root_object, supermodule, Ichannels, Lchannels, status_dict):

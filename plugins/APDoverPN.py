@@ -108,7 +108,6 @@ def getBadHV(available_runs, run_dict_temp, run_dict):
             reduction = full_rms - loo_rms
             bad_idx = np.argmax(reduction)
 
-            print("candidate", hv_labels[bad_idx])
             # Only flag if reduction is significant
 
             # Compute mean of other HV blocks (leave-one-out mean)
@@ -151,17 +150,14 @@ def getBadHV(available_runs, run_dict_temp, run_dict):
             else:
                 # RMS over all 50 channels in this HV column
                 rms_eta = np.sqrt(df_region[df_region["hv_block"] == bad_hv_block_label]["value"].values.std()**2 + np.mean((hv_channels_eta - hv_channels_eta.mean())**2))
-                print("hv_channels same eta.rms", rms_eta)
                 # Local significance: candidate HV mean vs RMS of its 50 channels
                 significance_local = abs(hv_values[bad_idx] - np.median(hv_channels_eta)) / rms_eta if rms_eta > 0 else 6
 
-            print("significance local: ", significance_local)
             if reduction[bad_idx]/full_rms > 0.5 and diff_fraction >= 0.1 and significance > 2 and significance_local > 1:
                 # Get all channels belonging to the bad HV block
                 hv_block_channels = df[df["hv_block"] == bad_hv_block_label]
                 hv_block_channels = hv_block_channels[hv_block_channels["sm"] == sm]
 
-                print("hv_block_channels", hv_block_channels[["iphi", "ieta"]])
                 # Convert each channel to its TT number using your function
                 tt_numbers = hv_block_channels.apply(
                     lambda row: ch_to_tt(row["iphi"], row["ieta"]),
