@@ -8,7 +8,7 @@ try:
   import time
   import sys
   import re
-  from datetime import datetime, timedelta
+  from datetime import datetime, timedelta, timezone
 
   DISK_PERC = 90
   DELTA_MAX = 240
@@ -17,19 +17,19 @@ try:
 
   # Extract start datetime
   start_match = re.search(r"Start:\s+(\d{2}/\d{2}/\d{2})\s+(\d{2}:\d{2})", oms_string)
-  duration_match = re.search(r"Duration:\s+(\d+)\s+min", oms_string)
+  duration_match = re.search(r"Duration:\s+-?(\d+)\s+min", oms_string)
 
   if not start_match or not duration_match:
       raise ValueError("Could not parse input string")
 
   start_str = f"{start_match.group(1)} {start_match.group(2)}"
   duration_minutes = int(duration_match.group(1))
-
   # Convert to datetime
   start_dt = datetime.strptime(start_str, "%d/%m/%y %H:%M")
 
   # Compute end time
-  end_dt = start_dt + timedelta(minutes=duration_minutes)
+  if duration_minutes== -1: end_dt = datetime.now(timezone.utc)
+  else: end_dt = start_dt + timedelta(minutes=duration_minutes)
 
   print("DEBUG Start:", start_dt)
   print("DEBUG End:", end_dt)
