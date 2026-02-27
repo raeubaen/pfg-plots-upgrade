@@ -34,7 +34,7 @@ def read_hist_EB(one_run_root_object, supermodule, EBchannels, status_dict):
                 status_df_match = (status_df["y_eta"] == x) & (status_df["x_phi"] == y) & (status_df["status"] >= 3)
                 if status_df_match.any(): continue
 
-                EBchannels["label"].append(f"{supermodule} [+{y}, -{x}]")
+                EBchannels["label"].append(f"{supermodule} [+{y}, +{x}]")
                 EBchannels["value"].append(one_run_root_object.GetBinContent(ix, iy))
 
 
@@ -70,12 +70,12 @@ def getBadHV(available_runs, run_dict_temp, run_dict):
         df["eta_block"] = (df["absieta"] - 1) // 5
         df["phi_block"] = (df["iphi"] - 1) // 10
         df["hv_block"] = df["eta_block"].astype(str) + "_" + df["phi_block"].astype(str)
+        # df["tt"] = df.apply(lambda r: ch_to_tt(r["iphi"], r["ieta"]), axis=1)
+        # df["hv_block"] = (df["tt"] - 1) // 2
 
         # LM region assignment (9 per SM)
-        mask_strip = df["absieta"] <= 5
-        df["region"] = 0
-        df.loc[~mask_strip, "region"] = (
-            1 + ((df.loc[~mask_strip, "absieta"] - 6) // 20) * 2 + ((df.loc[~mask_strip, "iphi"] - 1) // 10)
+        df["region"] = (
+            ((df["absieta"] > 25) * (1 + (df["absieta"] - 26) // 20)) * 2 + (df["iphi"] - 1) // 10
         )
 
         # Remove zero-value channels
@@ -85,28 +85,38 @@ def getBadHV(available_runs, run_dict_temp, run_dict):
 
         # Process each region separately
         for (sm, region), df_region in df_nonzero.groupby(["sm", "region"]):
+            print(f"\nsm: {sm}")
+            print(f"region: {region}")
 
             # Compute mean per HV block inside the region
             hv_group = df_region.groupby("hv_block")["value"].median()
+            print(f"hv_group: {hv_group}")
             hv_labels = df_region.groupby("hv_block")["label"].first().values  # pick representative label
+            print(f"hv_labels: {hv_labels}")
 
             hv_values = hv_group.values
+            print(f"hv_values: {hv_values}")
             N = len(hv_values)
+            print(f"N: {N}")
             if N < 2:
                 continue  # cannot do leave-one-out with <2 HV blocks
 
             # Full RMS of the HV blocks
             full_rms = np.sqrt(np.mean((hv_values - hv_values.mean())**2))
+            print(f"full_rms: {full_rms}")
 
             # Leave-one-out RMS
             loo_rms = np.array([
                 np.sqrt(np.mean((np.delete(hv_values, i) - np.delete(hv_values, i).mean())**2))
                 for i in range(N)
             ])
+            print(f"loo_rms: {loo_rms}")
 
             # Identify HV block whose exclusion reduces RMS the most
             reduction = full_rms - loo_rms
+            print(f"reduction: {reduction}")
             bad_idx = np.argmax(reduction)
+            print(f"bad_idx: {bad_idx}")
 
             print("candidate", hv_labels[bad_idx])
             # Only flag if reduction is significant
@@ -120,6 +130,7 @@ def getBadHV(available_runs, run_dict_temp, run_dict):
 
             # Compute RMS of all channels in the region excluding the candidate bad HV block
             bad_hv_block_label = hv_group.index[bad_idx]
+            print(f"bad_hv_block_label: {bad_hv_block_label}")
             region_values_excl_bad = df_region[df_region["hv_block"] != bad_hv_block_label]["value"].values
             if len(region_values_excl_bad) < 2:
                 continue  # not enough channels to compute RMS
@@ -159,6 +170,7 @@ def getBadHV(available_runs, run_dict_temp, run_dict):
             if reduction[bad_idx]/full_rms > 0.5 and diff_fraction >= 0.1 and significance > 2 and significance_local > 1:
                 # Get all channels belonging to the bad HV block
                 hv_block_channels = df[df["hv_block"] == bad_hv_block_label]
+                print("hv_block_channels", hv_block_channels[["iphi", "ieta"]])
                 hv_block_channels = hv_block_channels[hv_block_channels["sm"] == sm]
 
                 print("hv_block_channels", hv_block_channels[["iphi", "ieta"]])
@@ -176,6 +188,8 @@ def getBadHV(available_runs, run_dict_temp, run_dict):
                 run_dict["run"].append(run)
                 print(f"{sm}, {tt_numbers}")
                 print("BAD HV!!")
+                print("Number of channels in HV block:",len(hv_block_channels))
+                print("Unique TT numbers:", tt_numbers)
 
 class NoiseMap(Plugin):
     def __init__(self, buildopener):
@@ -190,8 +204,8 @@ class NoiseMap(Plugin):
         #EB
         EBsupermodules_list = ECAL.EBsupermodules_list
         for i, EBsupermodule in enumerate(EBsupermodules_list):
-            self.folder = "EcalBarrel/EBLaserTask/Laser3/"
-            self.plot_name = f"EBLT amplitude over PN {EBsupermodule} L3"
+            self.folder = "EcalBarrel/EBPedestalOnlineClient/"
+            self.plot_name = f"EBPOT pedestal rms map G12 {EBsupermodule}"
             EBchannels = {"label": [], "value": []}
             one_run_root_object = self.get_root_object(run_info)
             read_hist_EB(one_run_root_object, EBsupermodule, EBchannels, status_dict)
@@ -227,4 +241,4 @@ class NoiseMap(Plugin):
         df_EB = run_df.loc[run_df["label"].str.contains("EB", case=False)]
 
         #fillingEB history plot
-        self.fill_history_subplots(df_EB, available_runs, f"HV-flagged_APDoverPN_EB", f"{save_path}", change_hist_limits=True)
+        self.fill_history_subplots(df_EB, available_runs, f"HV-flagged_noise_EB", f"{save_path}", change_hist_limits=True)
