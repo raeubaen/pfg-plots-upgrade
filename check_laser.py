@@ -15,6 +15,7 @@ try:
 
   oms_string = sys.argv[1]
 
+  print("DEBUG Reading: ", oms_string)
   # Extract start datetime
   start_match = re.search(r"Start:\s+(\d{2}/\d{2}/\d{2})\s+(\d{2}:\d{2})", oms_string)
   duration_match = re.search(r"Duration:\s+-?(\d+)\s+min", oms_string)
@@ -61,7 +62,7 @@ try:
 
   p1 = "<p><b>Laser disk occupancy:</b></p>"
 
-  p2 = "<p><b>Last insertions in laser DB:</b></p>"
+  p2 = "<p><b>Last insertions in laser DB (UTC):</b></p>"
 
   # Find the table by its ID
   table = soup.find("table", id="disk_occupancy_table")
@@ -139,6 +140,8 @@ try:
 
   if abs(delta) > timedelta(minutes=DELTA_MAX):
       print(f"<br><p>WARNING: Last laser sequence is more than {DELTA_MAX} minutes delayed, or laser uploads stopped for more then {DELTA_MAX} minutes</p>")
+      print(f"<p> Last run info from OMS (ECAL IN required): {oms_string}</p>")
+      print(f"<p>Last LS taken in global DAQ: {end_dt} UTC</p>")
       print(p2)
       print(table.prettify())
 

@@ -41,11 +41,3 @@ cat "$OUTDIR/runlist_for_report.txt" | awk '{print $4",/Global/Online/ALL/"}' >>
 week=$(date -d '+1 week' +%W)
 day=$(date +%d-%B)
 
-
-DEST="/eos/project/c/cms-ecalpfg2/www/PFGshifts/PERFORMANCE2026/week${week}/${day}"
-SERVER="rgargiul@lxplus.cern.ch"
-
-sshpass -p Evale2.71828 ssh rgargiul@lxplus.cern.ch "mkdir -p $DEST"
-sshpass -p Evale2.71828 scp "$OUTDIR/runlist_for_report.txt" "$OUTDIR/runlist_for_pfg_plots.csv" "$SERVER:$DEST/"
-sshpass -p Evale2.71828 scp /root/index.php "$SERVER:$DEST/"
-sshpass -p Evale2.71828 scp /root/index.php "$SERVER:$DEST/../"

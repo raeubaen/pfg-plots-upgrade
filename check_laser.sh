@@ -1,5 +1,11 @@
 source /cvmfs/sft.cern.ch/lcg/views/LCG_108/x86_64-el9-gcc15-opt/setup.sh
 
+if grep -q "ECAL" /eos/project/c/cms-ecalpfg2/www/PFGshifts/PERFORMANCE2026/last_or_current_run; then
+  echo "last run found";
+else
+  return;
+fi
+
 # Create the HTML mail file
 echo -n "" > /eos/user/r/rgargiul/www/alarms_mail.html
 
@@ -9,7 +15,7 @@ echo "<html><body>" >> /eos/user/r/rgargiul/www/alarms_mail.html
 
 python3 /afs/cern.ch/work/r/rgargiul/pfg-plots-upgrade/check_laser.py "$(cat /eos/project/c/cms-ecalpfg2/www/PFGshifts/PERFORMANCE2026/last_or_current_run)" | grep -v DEBUG > /eos/user/r/rgargiul/www/alarms.html
 
-cat /eos/user/r/rgargiul/www/alarms.html
+#cat /eos/user/r/rgargiul/www/alarms.html
 
 if grep -q "EXCEPTION" /eos/user/r/rgargiul/www/alarms.html; then
     echo "File contains EXCEPTION"

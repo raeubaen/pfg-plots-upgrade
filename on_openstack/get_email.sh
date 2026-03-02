@@ -45,7 +45,3 @@ echo "</ul>" >> mail.html
 echo "</body></html>" >> mail.html
 
 
-sshpass -p Evale2.71828 scp mail.html rgargiul@lxplus.cern.ch:/eos/user/r/rgargiul/www/
-
-sshpass -p Evale2.71828 ssh rgargiul@lxplus.cern.ch "source /afs/cern.ch/work/r/rgargiul/pfg-plots-upgrade/send_mail.sh"
-
