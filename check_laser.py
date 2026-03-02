@@ -26,7 +26,8 @@ try:
   start_str = f"{start_match.group(1)} {start_match.group(2)}"
   duration_minutes = int(duration_match.group(1))
   # Convert to datetime
-  start_dt = datetime.strptime(start_str, "%d/%m/%y %H:%M")
+  #start_dt = datetime.strptime(start_str, "%d/%m/%y %H:%M")
+  start_dt = datetime.strptime(start_str, "%d/%m/%y %H:%M").replace(tzinfo=timezone.utc)
 
   # Compute end time
   if duration_minutes== -1: end_dt = datetime.now(timezone.utc)
@@ -35,6 +36,12 @@ try:
   print("DEBUG Start:", start_dt)
   print("DEBUG End:", end_dt)
 
+
+  now_utc = datetime.now(timezone.utc)
+
+  if now_utc - end_dt > timedelta(hours=8):
+    print("DEBUG Last run ended more than 8h ago — exiting.")
+    sys.exit(0)
 
   # URL to fetch
   url = "https://ecalmon.web.cern.ch/ecalmon/mirror/light-checker/"
@@ -120,13 +127,13 @@ try:
   #   2026-02-22 07:35
 
   try:
-      laser_dt = datetime.strptime(laser_time_str, "%Y-%m-%d %H:%M:%S")
+      laser_dt = datetime.strptime(laser_time_str, "%Y-%m-%d %H:%M:%S").replace(tzinfo=timezone.utc)
   except ValueError:
       try:
-          laser_dt = datetime.strptime(laser_time_str, "%Y-%m-%d %H:%M")
+          laser_dt = datetime.strptime(laser_time_str, "%Y-%m-%d %H:%M").replace(tzinfo=timezone.utc)
       except ValueError:
           try:
-              laser_dt = datetime.strptime(laser_time_str, "%y/%m/%d %H:%M")
+              laser_dt = datetime.strptime(laser_time_str, "%y/%m/%d %H:%M").replace(tzinfo=timezone.utc)
           except ValueError:
               raise ValueError(f"Unknown datetime format: {laser_time_str}")
 
