@@ -77,6 +77,8 @@ def getBadHV(available_runs, run_dict_temp, run_dict):
         df["region"] = (
             ((df["absieta"] > 25) * (1 + (df["absieta"] - 26) // 20)) * 2 + (df["iphi"] - 1) // 10
         )
+        # mask = ((df["ieta"] < -25) & (df["ieta"] >= -30)) & ((df["iphi"] >= 160) & (df["iphi"] < 170))
+        # print(df[mask].loc[:,["sm", "iphi", "ieta", "eta_block", "phi_block", "hv_block", "region"]])
 
         # Remove zero-value channels
         df_nonzero = df[df["value"] != 0].copy()
@@ -167,7 +169,8 @@ def getBadHV(available_runs, run_dict_temp, run_dict):
                 significance_local = abs(hv_values[bad_idx] - np.median(hv_channels_eta)) / rms_eta if rms_eta > 0 else 6
 
             print("significance local: ", significance_local)
-            if reduction[bad_idx]/full_rms > 0.5 and diff_fraction >= 0.1 and significance > 2 and significance_local > 1:
+            # if reduction[bad_idx]/full_rms > 0.5 and diff_fraction >= 0.1 and significance > 2 and significance_local > 1:
+            if reduction[bad_idx]/full_rms > 0.5 and diff_fraction >= 0.2 and significance > 3:
                 # Get all channels belonging to the bad HV block
                 hv_block_channels = df[df["hv_block"] == bad_hv_block_label]
                 print("hv_block_channels", hv_block_channels[["iphi", "ieta"]])

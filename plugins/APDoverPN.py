@@ -34,7 +34,7 @@ def read_hist_EB(one_run_root_object, supermodule, EBchannels, status_dict):
                 status_df_match = (status_df["y_eta"] == x) & (status_df["x_phi"] == y) & (status_df["status"] >= 3)
                 if status_df_match.any(): continue
 
-                EBchannels["label"].append(f"{supermodule} [+{y}, -{x}]")
+                EBchannels["label"].append(f"{supermodule} [+{y}, +{x}]")
                 EBchannels["value"].append(one_run_root_object.GetBinContent(ix, iy))
 
 
