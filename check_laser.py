@@ -29,12 +29,13 @@ try:
   #start_dt = datetime.strptime(start_str, "%d/%m/%y %H:%M")
   start_dt = datetime.strptime(start_str, "%d/%m/%y %H:%M").replace(tzinfo=timezone.utc)
 
+  print(f"DEBUG duration_minutes: {duration_minutes}")
   # Compute end time
-  if duration_minutes== -1: end_dt = datetime.now(timezone.utc)
+  if duration_minutes==1: end_dt = datetime.now(timezone.utc)
   else: end_dt = start_dt + timedelta(minutes=duration_minutes)
 
-  print("DEBUG Start:", start_dt)
-  print("DEBUG End:", end_dt)
+  print("DEBUG Start UTC:", start_dt)
+  print("DEBUG End UTC:", end_dt)
 
 
   now_utc = datetime.now(timezone.utc)
