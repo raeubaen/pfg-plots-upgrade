@@ -43,6 +43,9 @@ def main():
     runlist = read_csv(args.runlist_csvfile_path)
     if runlist is None:
         print("Error in reading the runlist file\nExiting from the execution of the program")
+    if len(runlist) == 0:
+        print("Run list empty, exiting")
+        return -1
 
     #read the plugins
     plugins = load_plugins(f"{os.path.dirname(os.path.realpath(__file__))}/conf.json")

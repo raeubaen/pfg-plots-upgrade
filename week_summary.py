@@ -20,6 +20,8 @@ def parse_range(value):
 def group_files_by_name(files):
     file_groups = defaultdict(list)
     for file in files:
+        if "runlist" in file: continue
+        if "Check" in file: continue
         file_name = file.split("/")[-1].split(".")[0]
         file_groups[file_name].append(file)
     return file_groups
@@ -37,12 +39,15 @@ print(weeks)
 
 filelist = []
 for week in weeks:
-  filelist += glob.glob(f"/eos/project/c/cms-ecalpfg2/www/PFGshifts/PERFORMANCE2025/week{week}/*/*.csv", recursive=True)
+  filelist += glob.glob(f"/eos/project/c/cms-ecalpfg2/www/PFGshifts/PERFORMANCE2026/week{week}/*/*.csv", recursive=True)
+
+print(filelist)
 
 file_groups = group_files_by_name(filelist)
 
 for group in file_groups:
   files = file_groups[group]
+  print("DEBUG: ", files)
   df = pd.concat([pd.read_csv(file) for file in files])
   counts = pd.DataFrame({"label": df["label"].value_counts().index, "counts": df["label"].value_counts().values})
   counts = counts[counts["counts"] > 1]
@@ -58,5 +63,5 @@ for group in file_groups:
   ax.grid(True, linestyle='--', alpha=0.6)
   plt.tight_layout()
 
-  plt.savefig(f"{outfolder}/{group}.png", dpi=300)
+  plt.savefig(f"{args.outfolder}/{group}.png", dpi=300)
 

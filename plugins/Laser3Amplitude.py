@@ -12,7 +12,7 @@ from ChannelStatus import ChannelStatus
 MEDIANUP_EB = 2
 MEDIANLOW_EB = 0.1
 MEDIANUP_EE = 3
-MEDIANLOW_EE = 0.001
+MEDIANLOW_EE = 0.0001
 
 
 def read_hist_EB(one_run_root_object, supermodule, Ichannels, Lchannels, status_dict):
@@ -26,7 +26,7 @@ def read_hist_EB(one_run_root_object, supermodule, Ichannels, Lchannels, status_
             for ix in range(1, nbinsx+1):
                 x = int(one_run_root_object.GetXaxis().GetBinUpEdge(ix))
                 y = int(one_run_root_object.GetYaxis().GetBinUpEdge(iy))
-                status_df_match = (status_df["y_eta"] == -x) & (status_df["x_phi"] == y) & (status_df["status"] >= 3)
+                status_df_match = (status_df["y_eta"] == -x) & (status_df["x_phi"] == y) & (status_df["status"] >= 2)
                 if status_df_match.any(): continue
                 if isIBlock(sm, one_run_root_object, ix, iy):
                     Ichannels["label"].append(f"{supermodule} [+{y}, -{x}]")
@@ -39,7 +39,7 @@ def read_hist_EB(one_run_root_object, supermodule, Ichannels, Lchannels, status_
             for ix in range(1, nbinsx+1):
                 x = int(one_run_root_object.GetXaxis().GetBinUpEdge(ix))
                 y = int(-one_run_root_object.GetYaxis().GetBinLowEdge(iy))
-                status_df_match = (status_df["y_eta"] == x) & (status_df["x_phi"] == y) & (status_df["status"] >= 3)
+                status_df_match = (status_df["y_eta"] == x) & (status_df["x_phi"] == y) & (status_df["status"] >= 2)
                 if status_df_match.any(): continue
 
                 if isIBlock(sm, one_run_root_object, ix, iy):
@@ -60,7 +60,7 @@ def read_hist_EE(one_run_root_object, supermodule, EEchannels, status_dict):
             if abs(one_run_root_object.GetBinContent(ix, iy)) != 0:
                 x = int(one_run_root_object.GetXaxis().GetBinUpEdge(ix))
                 y = int(one_run_root_object.GetYaxis().GetBinUpEdge(iy))
-                status_df_match = (status_df["y_eta"] == x) & (status_df["x_phi"] == y) & (status_df["status"] >= 3)
+                status_df_match = (status_df["y_eta"] == x) & (status_df["x_phi"] == y) & (status_df["status"] >= 2)
                 if status_df_match.any(): continue
 
                 EEchannels["label"].append(f"{supermodule} [+{x}, +{y}]")

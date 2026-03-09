@@ -3,6 +3,7 @@ source /cvmfs/sft.cern.ch/lcg/views/LCG_108/x86_64-el9-gcc15-opt/setup.sh
 if grep -q "ECAL" /eos/project/c/cms-ecalpfg2/www/PFGshifts/PERFORMANCE2026/last_or_current_run; then
   echo "last run found";
 else
+  echo "Exiting"
   return;
 fi
 

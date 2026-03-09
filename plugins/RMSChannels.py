@@ -22,6 +22,7 @@ def read_hist(one_run_root_object, run_dict, supermodule, status_dict):
 
     nbinsx = one_run_root_object.GetNbinsX()
     nbinsy = one_run_root_object.GetNbinsY()
+    x, y = 0, 0
     for iy in range(1, nbinsy+1):
         for ix in range(1, nbinsx+1):
             if (one_run_root_object.GetBinContent(ix, iy) < LOW_LIMIT and one_run_root_object.GetBinContent(ix, iy) > MIN_VALUE) or one_run_root_object.GetBinContent(ix, iy) > UP_LIMIT:
@@ -44,10 +45,12 @@ def read_hist(one_run_root_object, run_dict, supermodule, status_dict):
                 elif "EE" in supermodule: #y -> iy, x -> ix
                     x = int(one_run_root_object.GetXaxis().GetBinUpEdge(ix))
                     y = int(one_run_root_object.GetYaxis().GetBinUpEdge(iy))
-                    status_df_match = (status_df["y_eta"] == x) & (status_df["x_phi"] == y) & (status_df["status"] >= 3)
+                    print(f"DEBUG: {x}, {y}")
+                    status_df_match = (status_df["y_eta"] == y) & (status_df["x_phi"] == x) & (status_df["status"] >= 3)
+                    print(status_df[(status_df["y_eta"] == y) & (status_df["x_phi"] == x)])
                     if status_df_match.any():
                       continue
-                    run_dict["label"].append(f"{supermodule} [+{x}, +{y}]")
+                    run_dict["label"].append(f"{supermodule} [{x}, {y}]")
                     run_dict["value"].append(one_run_root_object.GetBinContent(ix, iy))
 
 
@@ -68,6 +71,7 @@ class RMSChannels(Plugin):
             self.folder = "EcalBarrel/EBPedestalOnlineClient/"
             self.plot_name = f"EBPOT pedestal rms map G12 {EBsupermodule}"
             one_run_root_object = self.get_root_object(run_info)
+            #one_run_root_object.SaveAs(f"Prova.root")
             read_hist(one_run_root_object, run_dict, EBsupermodule, status_dict)
 
         #EE
